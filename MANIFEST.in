@@ -1,0 +1,10 @@
+include README.md LICENSE
+recursive-include opencontainers *
+prune .env
+prune doc*
+prune .doc*
+recursive-exclude * __pycache__
+recursive-exclude * docs
+recursive-exclude * .docs
+recursive-exclude * *.pyc
+recursive-exclude * *.pyo
