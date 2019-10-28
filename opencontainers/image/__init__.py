@@ -11,5 +11,5 @@ from .specs import (
     VersionPatch,
     VersionDev,
     Version,
-    Versiond
+    Versioned
 )

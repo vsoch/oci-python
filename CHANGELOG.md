@@ -16,4 +16,5 @@ Critical items to know are:
 Versions here coincide with releases on pypi.
 
 ## [master](https://github.com/vsoch/oci-python)
+ - adding image-spec and digests (0.0.1)
  - skeleton of package while core under development (0.0.0)

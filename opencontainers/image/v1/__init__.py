@@ -21,8 +21,8 @@ from .annotations import (
 )
 
 from .config import (
-    ImageConfig
-    RootFS
+    ImageConfig,
+    RootFS,
     Image
 )
 
