@@ -26,7 +26,7 @@ Version = "%d.%d.%d%s" %(VersionMajor, VersionMinor, VersionPatch, VersionDev)
 # Incoming content with unknown schema version can be decoded against this
 # struct to check the version.
 
-class Versiond(Struct):
+class Versioned(Struct):
     def __init__(self, schemaVersion):
 
         # SchemaVersion is the image manifest schema that this image follows

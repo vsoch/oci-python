@@ -129,6 +129,8 @@ class Struct(object):
         self.attrs[name].value = value
 
 
+    # TODO a load function
+
     def validate(self):
         '''validate goes through each attribute, and ensure that it is of the
            correct type, and if required it is defined. This is already done
