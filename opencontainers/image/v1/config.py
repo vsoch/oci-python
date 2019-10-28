@@ -19,6 +19,8 @@ class ImageConfig(Struct):
                        cmd=None, volumes=None, workingDir=None, labels=None,
                        stopSignal=None):
 
+        super().__init__()
+
         # User defines the username or UID which the process in the container should run as.
         self.newAttr(name="User", attType=str)
 
@@ -60,15 +62,16 @@ class ImageConfig(Struct):
 class RootFS(Struct):
     ''' RootFS describes a layer content addresses
     '''
-    def __init__(self, rootfs_type, diff_ids):
+    def __init__(self, rootfs_type=None, diff_ids=None):
+        super().__init__()
 
-        # Type is the type of the rootfs.
-        self.newAttr(name="Type", attType=str, omitempty=False, jsonName="type")
+        # Type is the type of the rootfs, different from GoLang since type can't be used
+        self.newAttr(name="RootFSType", attType=str, omitempty=False, jsonName="type")
 
         # DiffIDs is an array of layer content hashes (DiffIDs), in order from bottom-most to top-most.
-        self.newAttr(name="DiffIDs", attType=[Digest], omitempty=False, jsonName="diff_ids")
+        self.newAttr(name="DiffIDs", attType=[str], omitempty=False, jsonName="diff_ids")
 
-        self.add("Type", rootfs_type)
+        self.add("RootFSType", rootfs_type)
         self.add("DiffIDs", diff_ids) 
 
 
@@ -77,6 +80,8 @@ class History(Struct):
     ''' 
     def __init__(self, created=None, created_by=None, author=None, comment=None,
                        empty_layer=None):
+
+        super().__init__()
       
         # Created is the combined date and time at which the layer was created, formatted as defined by RFC 3339, section 5.6.
         self.newAttr("Created", attType=datetime, jsonName="created")
@@ -99,6 +104,7 @@ class History(Struct):
         self.add("Comment", comment)
         self.add("EmptyLayer", empty_layer)
 
+
 class Image(Struct):
     '''Image is the JSON structure which describes some basic information about 
        the image. This provides the `application/vnd.oci.image.config.v1+json` 
@@ -106,6 +112,8 @@ class Image(Struct):
     '''
     def __init__(self, created=None, author=None, arch=None, imageOS=None,
                        imageConfig=None, rootfs=None, hist=None):
+
+        super().__init__()
 
         # Created is the combined date and time at which the image was created, formatted as defined by RFC 3339, section 5.6.
         self.newAttr("Created", attType=datetime, jsonName="created")

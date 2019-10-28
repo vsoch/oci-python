@@ -18,7 +18,8 @@ class ImageLayout(Struct):
     '''ImageLayout is the structure in the "oci-layout" file, found in the root 
        of an OCI Image-layout directory.
     '''
-    def __init__(self, version):
+    def __init__(self, version=None):
+        super().__init__()
 
         self.newAttr(name="Version", attType=str, jsonName="imageLayoutVersion", required=True)
-        self.add("Version", version)
+        self.add("Version", version or ImageLayoutVersion)

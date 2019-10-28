@@ -27,7 +27,7 @@ Version = "%d.%d.%d%s" %(VersionMajor, VersionMinor, VersionPatch, VersionDev)
 # struct to check the version.
 
 class Versioned(Struct):
-    def __init__(self, schemaVersion):
+    def __init__(self, schemaVersion=None):
 
         # SchemaVersion is the image manifest schema that this image follows
         self.newAttr(name="SchemaVersion", 
@@ -35,4 +35,4 @@ class Versioned(Struct):
                      required=True, 
                      jsonName='schemaVersion')
 
-        self.add("SchemaVersion", schemaVersion)
+        self.add("SchemaVersion", schemaVersion or VersionMajor)

@@ -15,8 +15,10 @@ class Index(Struct):
        This structure provides `application/vnd.oci.image.index.v1+json` 
        mediatype when marshalled to JSON.
     '''
-    def __init__(self, manifests, schemaVersion, annotations=None):
-        Versioned = Versioned(schemaVersion)
+    def __init__(self, manifests=None, schemaVersion=None, annotations=None):
+        super().__init__()
+
+        self.newAttr(name="specs.Versioned", attType=Versioned, required=True, hide=True)
 
         # Manifests references platform specific manifests.
         self.newAttr(name="Manifests", attType=[Descriptor], jsonName="manifests", required=True)
@@ -26,3 +28,4 @@ class Index(Struct):
 
         self.add("Manifests", manifests)
         self.add("annotations", annotations)
+        self.add("specs.Versioned", Versioned(schemaVersion))

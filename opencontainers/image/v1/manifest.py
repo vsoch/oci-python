@@ -14,13 +14,14 @@ class Manifest(Struct):
     '''Manifest provides `application/vnd.oci.image.manifest.v1+json` 
        mediatype structure when marshalled to JSON.
     '''
-    def __init__(self, manifestConfig, layers, schemaVersion, annotations=None):
+    def __init__(self, manifestConfig=None, layers=None, schemaVersion=None, annotations=None):
+        super().__init__()
 
-        Versioned = Versioned(schemaVersion)
+        self.newAttr(name="specs.Versioned", attType=Versioned, required=True, hide=True)
 
         # Config references a configuration object for a container, by digest.
         # The referenced configuration object is a JSON blob that the runtime uses to set up the container.
-        self.newAttr(name="Config", attType="Descriptor", jsonName="config", required=True)
+        self.newAttr(name="Config", attType=Descriptor, jsonName="config", required=True)
 
         # Layers is an indexed list of layers referenced by the manifest.
         self.newAttr(name="Layers", attType=[Descriptor], jsonName="layers", required=True)
@@ -31,3 +32,4 @@ class Manifest(Struct):
         self.add("Config", manifestConfig)
         self.add("Layers", layers)
         self.add("Annotations", annotations)
+        self.add("specs.Versioned", Versioned(schemaVersion))

@@ -6,6 +6,7 @@
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from opencontainers.logger import bot
+from datetime import datetime
 import copy
 import json
 
@@ -40,14 +41,40 @@ class StructAttr(object):
     def __repr__(self):
         return self.__str__()
 
+    def _is_struct(self, attType=None):
+        '''determine if an attType is another struct we need to populate
+        '''
+        # We can provide a nested attType to check
+        if not attType:
+            attType = self.attType
+        try:
+            return Struct in attType.__bases__
+        except:
+            return False
+
     def set(self, value):
         '''set a new value, and validate the type. Return true if set
         '''
+        # First pass, it might be another object to add
+        if self._is_struct():        
+            newStruct = self.attType()
+            value = newStruct.load(value)
+            
         if self.validate_type(value):
             self.value = value
             return True
         return False
 
+    def validate_datetime(self, value):
+        '''validate a datetime string, but be generous to only check day,
+           month, year. This is a road nobody wants to go down.
+        '''
+        value = value.split('T')[0]
+        try: # "2015-10-31T22:22:56.015925234Z"
+            datetime.strptime(value, '%Y-%m-%d')
+            return True
+        except ValueError:
+            return False
 
     def validate_type(self, value):
         '''ensure that an attribute is of the correct type. If we are given
@@ -68,6 +95,10 @@ class StructAttr(object):
                     if not isinstance(entry, attType):
                         return False
 
+        # If it's a datetime, should be valid string
+        elif self.attType == datetime:
+            return self.validate_datetime(value)
+
         # Otherwise, validate as is
         else:
             if not isinstance(value, self.attType):
@@ -81,11 +112,13 @@ class Struct(object):
        the subclass should have an init function that uses the functions
        here to add required attributes.
     '''
-    attrs = {}
+    def __init__(self):
+        self.attrs = {}
 
     def newAttr(self, name, attType, required=False, jsonName=None, omitempty=True):
         '''add a new attribute, including a name, json key to dump,
-           type, and if required. We don't need a value here
+           type, and if required. We don't need a value here. You can
+           also update a current attribute here.
 
            Parameters
            ==========
@@ -95,8 +128,6 @@ class Struct(object):
            jsonName: the name to serialize to json (not required, will use name)
            omitempty: if true, don't serialize with response.
         '''
-        if name in self.attrs:
-            bot.exit("%s has already been added." % name)
         self.attrs[name] = StructAttr(name=name, 
                                       attType=attType,
                                       required=required,
@@ -152,14 +183,12 @@ class Struct(object):
                 bot.exit("%s must be type %s." %(name, attr.attType))
 
 
-    def load(self, content):
+    def load(self, content, validate=True):
         '''given a dictionary load into its respective object
+           if validate is True, we require it to be completely valid.
         '''
         if not isinstance(content, dict):
             bot.exit("Please provide a dictionary to load.")
-
-        # Validate the content, only clear if it's valid
-        attrs = copy.deepcopy(self.attrs)
 
         # Look up attributes based on jsonKey
         lookup = self.generate_json_lookup()
@@ -174,8 +203,13 @@ class Struct(object):
         self._clear_values()
         for key, value in content.items():
             att = lookup.get(key)
-            att.set(value)
+            valid = att.set(value)
+            if not valid and validate:
+                bot.exit("%s (%s) is not valid." % (att.name, att.jsonName))
+            self.attrs[att.name] = att
 
+        # Return the updated instance
+        return self
 
     def generate_json_lookup(self):
         '''based on the attributes, generate a jsonName lookup object.
@@ -193,6 +227,10 @@ class Struct(object):
            to some extent when add is called.
         '''
         for name, att in self.attrs.items():
+
+            # Not required, undefined
+            if not att.required and not att.value:
+                continue
 
             # A required attribute cannot be None or empty
             if att.required and not att.value:
