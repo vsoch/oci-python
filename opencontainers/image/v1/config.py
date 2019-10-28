@@ -54,7 +54,7 @@ class ImageConfig(Struct):
         self.add("Volumes", volumes)
         self.add("WorkingDir", workingDir)
         self.add("Labels", labels)
-        self.add("stopSignal", stopSignal)
+        self.add("StopSignal", stopSignal)
  
 
 class RootFS(Struct):
@@ -72,7 +72,7 @@ class RootFS(Struct):
         self.add("DiffIDs", diff_ids) 
 
 
-class History(struct):
+class History(Struct):
     '''History describes the history of a layer.
     ''' 
     def __init__(self, created=None, created_by=None, author=None, comment=None,
@@ -114,7 +114,7 @@ class Image(Struct):
         self.newAttr("Author", attType=str, jsonName="author")
         
         # Architecture is the CPU architecture which the binaries in this image are built to run on.
-        self.newAttr(name="Architecture", str, jsonName="architecture", required=True)
+        self.newAttr(name="Architecture", attType=str, jsonName="architecture", required=True)
 
         # OS is the name of the operating system which the image is built to run on.
         self.newAttr("OS", attType=str, jsonName="os", required=True)
