@@ -53,3 +53,14 @@ from .mediatype import (
     MediaTypeImageLayerNonDistributableZstd,
     MediaTypeImageConfig
 )
+
+DEFAULT_CONFIG_MEDIATYPE = MediaTypeImageConfig
+KNOWN_CONFIG_MEDIATYPE = (MediaTypeImageConfig)
+DEFAULT_IMAGELAYER_MEDIATYPE = MediaTypeImageLayer
+KNOWN_IMAGELAYER_MEDIATYPE = (MediaTypeImageLayer,
+    MediaTypeImageLayerGzip,
+    MediaTypeImageLayerZstd,
+    MediaTypeImageLayerNonDistributable,
+    MediaTypeImageLayerNonDistributableGzip,
+    MediaTypeImageLayerNonDistributableZstd
+    )
