@@ -1,0 +1,14 @@
+- title: Documentation
+  url: docs
+  links:
+    - title: "Getting Started"
+      url: "docs/getting-started"
+      children:
+        - title: Overview
+          url: "docs/getting-started#getting-started"
+        - title: Image Specification
+          url: "docs/getting-started#image-specification"
+    - title: "About"
+      url: "about"
+    - title: "News"
+      url: "news"
