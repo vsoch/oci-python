@@ -28,7 +28,7 @@ class ImageConfig(Struct):
         self.newAttr(name="ExposedPorts", attType=dict)
 
         # Env is a list of environment variables to be used in a container.
-        self.newAttr(name="Env", attType=list)
+        self.newAttr(name="Env", attType=[str])
 
         # Entrypoint defines a list of arguments to use as the command to execute when the container starts.
         self.newAttr(name="Entrypoint", attType=list)
@@ -96,7 +96,7 @@ class History(Struct):
         self.newAttr("Comment", attType=str, jsonName="comment")
 
         # EmptyLayer is used to mark if the history item created a filesystem diff.
-        self.newAttr("EmptyLayer", attrType=bool, jsonName="empty_layer")
+        self.newAttr("EmptyLayer", attType=bool, jsonName="empty_layer")
 
         self.add("Created", created)
         self.add("CreatedBy", created_by)

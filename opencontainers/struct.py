@@ -56,14 +56,33 @@ class StructAttr(object):
         '''set a new value, and validate the type. Return true if set
         '''
         # First pass, it might be another object to add
-        if self._is_struct():        
+        if self._is_struct():
             newStruct = self.attType()
             value = newStruct.load(value)
-            
+
+        # If it's a list with another type
+        elif isinstance(self.attType, list) and self.attType:
+            child = self.attType[0]
+
+            # It's either a nested structure
+            if self._is_struct(child):
+
+                # If we have a list of values, generate them
+                if isinstance(value, list):
+                    values = []
+                    for v in value:
+                        newStruct = child()
+                        values.append(newStruct.load(v))
+                    value = values
+                else:
+                    newStruct = child()
+                    value = newStruct.load(value)
+
         if self.validate_type(value):
             self.value = value
             return True
         return False
+
 
     def validate_datetime(self, value):
         '''validate a datetime string, but be generous to only check day,
@@ -75,6 +94,7 @@ class StructAttr(object):
             return True
         except ValueError:
             return False
+
 
     def validate_type(self, value):
         '''ensure that an attribute is of the correct type. If we are given
@@ -90,7 +110,6 @@ class StructAttr(object):
             # A type to check is inside
             if self.attType:
                 attType = self.attType[0]
-
                 for entry in value:
                     if not isinstance(entry, attType):
                         return False
@@ -188,12 +207,11 @@ class Struct(object):
            if validate is True, we require it to be completely valid.
         '''
         if not isinstance(content, dict):
-            bot.exit("Please provide a dictionary to load.")
+            bot.exit("Please provide a dictionary or list to load.")
 
         # Look up attributes based on jsonKey
         lookup = self.generate_json_lookup()
 
-        # Go through each value for the content, validate
         for key, value in content.items():
             att = lookup.get(key)
             if not att:
@@ -201,6 +219,7 @@ class Struct(object):
 
         # If we get here, all parameters are valid, replace
         self._clear_values()
+
         for key, value in content.items():
             att = lookup.get(key)
             valid = att.set(value)
@@ -208,8 +227,8 @@ class Struct(object):
                 bot.exit("%s (%s) is not valid." % (att.name, att.jsonName))
             self.attrs[att.name] = att
 
-        # Return the updated instance
         return self
+
 
     def generate_json_lookup(self):
         '''based on the attributes, generate a jsonName lookup object.
