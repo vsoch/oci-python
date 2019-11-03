@@ -9,7 +9,7 @@ from opencontainers.logger import bot
 from datetime import datetime
 import copy
 import json
-
+import re
 
 class StructAttr(object):
     '''A struct attribute holds a name, jsonName, value, attribute type,
@@ -27,11 +27,12 @@ class StructAttr(object):
        omitempty: if true, don't serialize with response.       
     '''
     def __init__(self, name, attType, required, 
-                       jsonName=None, value=None, omitempty=True):
+                       jsonName=None, value=None, omitempty=True, regexp=None):
         self.name = name
         self.value = value
         self.attType = attType
         self.required = required
+        self.regexp = regexp or ""
         self.jsonName = jsonName or name
         self.omitempty = omitempty
 
@@ -78,6 +79,11 @@ class StructAttr(object):
                     newStruct = child()
                     value = newStruct.load(value)
 
+
+        # If we have a string with a regular expression
+        if not self.validate_regexp(value):
+            return False
+
         if self.validate_type(value):
             self.value = value
             return True
@@ -94,6 +100,27 @@ class StructAttr(object):
             return True
         except ValueError:
             return False
+
+
+    def validate_regexp(self, value):
+        '''validate a string or nested string values against a regular
+           expression. Return True if valid or not applicable, False otherwise
+        '''
+        if not self.regexp:
+            return True
+
+        # Only need to look at immediate children
+        if not isinstance(value, list):
+            value = [value]
+
+        for entry in value:
+            if isinstance(entry, str):
+                if not re.search(self.regexp, entry):
+                    bot.error(
+                        "%s failed regex validation %s " %(entry, self.regexp)
+                    )
+                    return False
+        return True
 
 
     def validate_type(self, value):
@@ -134,7 +161,7 @@ class Struct(object):
     def __init__(self):
         self.attrs = {}
 
-    def newAttr(self, name, attType, required=False, jsonName=None, omitempty=True):
+    def newAttr(self, name, attType, required=False, jsonName=None, omitempty=True, regexp=""):
         '''add a new attribute, including a name, json key to dump,
            type, and if required. We don't need a value here. You can
            also update a current attribute here.
@@ -146,12 +173,14 @@ class Struct(object):
            required: boolean if required or not
            jsonName: the name to serialize to json (not required, will use name)
            omitempty: if true, don't serialize with response.
+           regexp: if a string is provided as the type (or nested), check against
         '''
         self.attrs[name] = StructAttr(name=name, 
                                       attType=attType,
                                       required=required,
                                       jsonName=jsonName, 
-                                      omitempty=omitempty)
+                                      omitempty=omitempty,
+                                      regexp=regexp)
 
     def _clear_values(self):
         '''if a load is done, we remove previously loaded values for any
@@ -257,7 +286,7 @@ class Struct(object):
                 return False
 
             # The attribute must match its type
-            if not isinstance(att.value, att.attType):
+            if not att.validate_type(att.value):
                 bot.error("%s should be type %s" %(name, att.attType))
                 return False
 

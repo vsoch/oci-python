@@ -50,7 +50,7 @@ config_invalid_history = {
     }
 }
 
-config_invalid_env = {
+config_invalid_envint = {
     "architecture": "amd64",
     "os": "linux",
     "config": {
@@ -138,6 +138,35 @@ config_valid_with_optional = {
     ]
 }
 
+config_valid_required = {
+    "architecture": "amd64",
+    "os": "linux",
+    "rootfs": {
+      "diff_ids": [
+        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+      ],
+      "type": "layers"
+    }
+}
+
+
+config_invalid_env = {
+    "architecture": "amd64",
+    "os": "linux",
+    "config": {
+        "Env": [
+            "foo"
+        ]
+    },
+    "rootfs": {
+      "diff_ids": [
+        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+      ],
+      "type": "layers"
+    }
+}
+
+
 def test_example_config(tmp_path):
     '''test creation of a simple sink plugin
     '''
@@ -157,11 +186,20 @@ def test_example_config(tmp_path):
 
     # Env is numeric, must be list of strings
     with pytest.raises(SystemExit):
-        image.load(config_invalid_env)
+        image.load(config_invalid_envint)
 
     # volumes cannot be list
     with pytest.raises(SystemExit):
         image.load(config_invalid_volumes)
 
+    # invalid environment
+    with pytest.raises(SystemExit):
+        image.load(config_invalid_env)
+
     # valid config with optional fields
     image.load(config_valid_with_optional)
+    assert image.validate()
+ 
+    # minimum valid required
+    image.load(config_valid_required)
+    assert image.validate()

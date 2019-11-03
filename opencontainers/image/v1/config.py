@@ -28,7 +28,7 @@ class ImageConfig(Struct):
         self.newAttr(name="ExposedPorts", attType=dict)
 
         # Env is a list of environment variables to be used in a container.
-        self.newAttr(name="Env", attType=[str])
+        self.newAttr(name="Env", attType=[str], regexp="^(?P<var_name>.+?)=(?P<var_value>.+)")
 
         # Entrypoint defines a list of arguments to use as the command to execute when the container starts.
         self.newAttr(name="Entrypoint", attType=list)
