@@ -69,7 +69,7 @@ class RootFS(Struct):
         self.newAttr(name="RootFSType", attType=str, omitempty=False, jsonName="type")
 
         # DiffIDs is an array of layer content hashes (DiffIDs), in order from bottom-most to top-most.
-        self.newAttr(name="DiffIDs", attType=[str], omitempty=False, jsonName="diff_ids")
+        self.newAttr(name="DiffIDs", attType=[Digest], omitempty=False, jsonName="diff_ids")
 
         self.add("RootFSType", rootfs_type)
         self.add("DiffIDs", diff_ids) 

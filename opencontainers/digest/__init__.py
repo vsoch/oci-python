@@ -5,4 +5,18 @@
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from .digest import Digest
+from .digest import (
+    Digest, 
+    DigestRegexp,
+    DigestRegexpAnchored,
+    NewDigestFromEncoded,
+    Parse
+)
+
+from .algorithm import (
+    Algorithm,
+    SHA256,
+    SHA384,
+    SHA512,
+    Canonical
+)

@@ -5,7 +5,7 @@
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from opencontainers.struct import Struct
+from opencontainers.struct import IntStruct
 
 # VersionMajor is for an API incompatible changes
 VersionMajor = 1
@@ -26,13 +26,6 @@ Version = "%d.%d.%d%s" %(VersionMajor, VersionMinor, VersionPatch, VersionDev)
 # Incoming content with unknown schema version can be decoded against this
 # struct to check the version.
 
-class Versioned(Struct):
+class Versioned(IntStruct):
     def __init__(self, schemaVersion=None):
-
-        # SchemaVersion is the image manifest schema that this image follows
-        self.newAttr(name="SchemaVersion", 
-                     attType=int,
-                     required=True, 
-                     jsonName='schemaVersion')
-
-        self.add("SchemaVersion", schemaVersion or VersionMajor)
+        super().__init__(schemaVersion or VersionMajor)

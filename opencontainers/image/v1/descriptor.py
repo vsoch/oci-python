@@ -28,7 +28,7 @@ class Descriptor(Struct):
         self.newAttr(name="Size", attType=int, jsonName="size", required=True)
 
         # URLs specifies a list of URLs from which this object MAY be downloaded
-        self.newAttr(name="URLs", attType=[str], jsonname="urls")
+        self.newAttr(name="URLs", attType=[str], jsonName="urls")
 
         # Annotations contains arbitrary metadata relating to the targeted content.
         self.newAttr(name="Annotations", attType=dict, jsonName="annotations")
