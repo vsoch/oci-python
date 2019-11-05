@@ -348,9 +348,6 @@ class StrStruct(Struct, str):
         super().__init__(**kwargs)
 
     def load(self, content, validate=True):
-        '''given a dictionary load into its respective object
-           if validate is True, we require it to be completely valid.
-        '''
         # If we have a string, self must also have string subclass
         if isinstance(self, str) and isinstance(content, str):
             self = self.__class__(content)
@@ -367,10 +364,7 @@ class IntStruct(Struct, int):
         super().__init__(**kwargs)
 
     def load(self, content, validate=True):
-        '''given a dictionary load into its respective object
-           if validate is True, we require it to be completely valid.
-        '''
-        # If we have a string, self must also have string subclass
+        # If we have an int, self must also have string subclass
         if isinstance(self, int) and isinstance(content, int):
             self = self.__class__(content)
             self.validate()

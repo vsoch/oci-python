@@ -21,5 +21,8 @@ class ImageLayout(Struct):
     def __init__(self, version=None):
         super().__init__()
 
-        self.newAttr(name="Version", attType=str, jsonName="imageLayoutVersion", required=True)
+        # This is for semver, but without the v
+        regexp = r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patchlevel>\d+)~?(?P<special>[a-z]\w+[\d+])?$"
+        self.newAttr(name="Version", attType=str, jsonName="imageLayoutVersion",
+                     required=True, regexp=regexp)
         self.add("Version", version or ImageLayoutVersion)
