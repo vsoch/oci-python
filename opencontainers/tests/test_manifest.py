@@ -125,9 +125,48 @@ invalid_empty_layers = {
   "layers": []
 }
 
-# I don't really understand these last two tests - (algorithm bounds?)
-# if anyone wants to take a shot, please do!
-# https://github.com/opencontainers/image-spec/blob/master/schema/manifest_test.go#L179
+expected_bounds_pass = {
+  "schemaVersion": 2,
+  "config": {
+    "mediaType": "application/vnd.oci.image.config.v1+json",
+    "size": 1470,
+    "digest": "sha256+b64:c86f7763873b6c0aae22d963bab59b4f5debbed6685761b5951584f6efb0633b"
+  },
+  "layers": [
+    {
+      "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+      "size": 1470,
+      "digest": "sha256+foo-bar:c86f7763873b6c0aae22d963bab59b4f5debbed6685761b5951584f6efb0633b"
+    },
+    {
+      "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+      "size": 1470,
+      "digest": "sha256.foo-bar:c86f7763873b6c0aae22d963bab59b4f5debbed6685761b5951584f6efb0633b"
+    }
+    # multihash is not registered, but still valid formatting, but here we would consider it invalid
+    #{
+    #  "mediaType": "application/vnd.oci.image.config.v1+json",
+    #  "size": 1470,
+    #   "digest": "multihash+base58:QmRZxt2b1FVZPNqd8hsiykDL3TdBDeTSPX9Kv46HmX4Gx8"
+    #}
+  ]
+}
+
+expected_bounds_fail = {
+  "schemaVersion": 2,
+  "config": {
+    "mediaType": "application/vnd.oci.image.config.v1+json",
+    "size": 1470,
+    "digest": "sha256+b64:c86f7763873b6c0aae22d963bab59b4f5debbed6685761b5951584f6efb0633b"
+  },
+  "layers": [
+    {
+      "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+      "size": 1470,
+      "digest": "sha256+foo+-b:c86f7763873b6c0aae22d963bab59b4f5debbed6685761b5951584f6efb0633b"
+    }
+  ]
+}
 
 
 def test_manifests(tmp_path):
@@ -136,9 +175,9 @@ def test_manifests(tmp_path):
     manifest = Manifest()
 
     # expected failure: mediaType does not match pattern
-    manifest.load(invalid_mediatype_pattern)
-    assert not manifest.validate()
-
+    with pytest.raises(SystemExit):
+        manifest.load(invalid_mediatype_pattern)
+    
     # config size is string, should be int
     with pytest.raises(SystemExit):
         manifest.load(invalid_config_size_string)
@@ -154,5 +193,12 @@ def test_manifests(tmp_path):
     manifest.load(valid_with_required)
 
     # expected failure: empty layer, expected at least one
-    manifest.load(invalid_empty_layers)
-    assert not manifest.validate()
+    with pytest.raises(SystemExit):
+        manifest.load(invalid_empty_layers)
+
+    # expected pass: test bounds of algorithm field in digest.
+    manifest.load(expected_bounds_pass)
+
+    # expected failure: push bounds of algorithm field in digest too far.
+    with pytest.raises(SystemExit):
+        manifest.load(expected_bounds_fail)

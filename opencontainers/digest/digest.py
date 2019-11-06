@@ -26,17 +26,24 @@ class Digest(StrStruct):
         super().__init__(value)
 
     def validate(self):
-        '''Validate checks that the contents of d is a valid digest
+        '''Validate checks that the contents of self (the digest) is valid
         '''
-        try:
-            algorithm, encoded = (self).split(":")
-            algorithm = Algorithm(algorithm)
+        regexp = "^[a-z0-9]+(?:[+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+$"
 
-            # Also checks if algorithm.available()
-            return algorithm.validate(encoded)
-        except:
-            bot.error("%s is not a valid digest format <alg>:<digest>")
-            return False
+        # Must match for a digest
+        if not re.search(regexp, self):
+            bot.exit("%s does not match %s" %(self, regexp))
+
+        algorithm, encoded = (self).split(":")
+
+        # Remove the extra component, if there
+        match = re.search("[+._-]", algorithm)
+        if match:
+            algorithm = algorithm[:match.start()]
+        algorithm = Algorithm(algorithm)
+
+        # Also checks if algorithm.available()
+        return algorithm.validate(encoded)
 
     def sepIndex(self):
         '''return the index of the : separator'''
