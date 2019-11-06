@@ -74,6 +74,6 @@ class Platform(Struct):
 
         self.add("Architecture", arch)
         self.add("OS", platform_os)
-        self.add("OSVersion", os_verison)
+        self.add("OSVersion", os_version)
         self.add("OSFeatures", os_features)
         self.add("Variant", variant)

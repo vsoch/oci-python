@@ -7,6 +7,11 @@
 
 from opencontainers.struct import Struct
 from opencontainers.image.specs import Versioned
+from opencontainers.logger import bot
+from .mediatype import (
+    MediaTypeImageIndex, 
+    MediaTypeImageManifest
+)
 from .descriptor import Descriptor
 
 
@@ -18,7 +23,7 @@ class Index(Struct):
     def __init__(self, manifests=None, schemaVersion=None, annotations=None):
         super().__init__()
 
-        self.newAttr(name="specs.Versioned", attType=Versioned, required=True, hide=True)
+        self.newAttr(name="schemaVersion", attType=Versioned, required=True)
 
         # Manifests references platform specific manifests.
         self.newAttr(name="Manifests", attType=[Descriptor], jsonName="manifests", required=True)
@@ -27,5 +32,21 @@ class Index(Struct):
         self.newAttr(name="Annotations", attType=dict, jsonName="annotations")
 
         self.add("Manifests", manifests)
-        self.add("annotations", annotations)
-        self.add("specs.Versioned", Versioned(schemaVersion))
+        self.add("Annotations", annotations)
+        self.add("schemaVersion", schemaVersion)
+
+
+    def _validate(self):
+        '''custom validation function to ensure that Manifests mediaTypes
+           are valid.
+        '''
+        valid_types = [MediaTypeImageManifest, MediaTypeImageIndex]
+
+        manifests = self.attrs.get('Manifests').value
+        if manifests:
+            for manifest in manifests:
+                mediaType = manifest.attrs.get('MediaType')
+                if mediaType.value not in valid_types:
+                    bot.error("%s is not valid for index manifest." % mediaType)
+                    return False
+        return True

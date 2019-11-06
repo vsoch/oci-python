@@ -297,6 +297,10 @@ class Struct(object):
                 bot.exit("%s (%s) is not valid." % (att.name, att.jsonName))
             self.attrs[att.name] = att
 
+        # Validate the entire structure
+        if validate:
+            if not self.validate():
+                bot.exit("%s is invalid" % self)
         return self
 
 
