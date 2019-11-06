@@ -19,7 +19,9 @@ class Descriptor(Struct):
         super().__init__()
    
         # MediaType is the media type of the object this schema refers to.
-        self.newAttr(name="MediaType", attType=str, jsonName="mediaType")
+        regexp = "^[A-Za-z0-9][A-Za-z0-9!#$&-^_.+]{0,126}/[A-Za-z0-9][A-Za-z0-9!#$&-^_.+]{0,126}$"
+        self.newAttr(name="MediaType", attType=str, jsonName="mediaType", 
+                    regexp=regexp, required=True)
 
         # Digest is the digest of the targeted content.
         self.newAttr(name="Digest", attType=Digest, jsonName="digest", required=True)
@@ -28,7 +30,8 @@ class Descriptor(Struct):
         self.newAttr(name="Size", attType=int, jsonName="size", required=True)
 
         # URLs specifies a list of URLs from which this object MAY be downloaded
-        self.newAttr(name="URLs", attType=[str], jsonName="urls")
+        regexp = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+        self.newAttr(name="URLs", attType=[str], jsonName="urls", regexp=regexp)
 
         # Annotations contains arbitrary metadata relating to the targeted content.
         self.newAttr(name="Annotations", attType=dict, jsonName="annotations")

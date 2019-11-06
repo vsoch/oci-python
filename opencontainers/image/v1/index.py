@@ -13,7 +13,7 @@ from .mediatype import (
     MediaTypeImageManifest
 )
 from .descriptor import Descriptor
-
+import re
 
 class Index(Struct):
     '''Index references manifests for various platforms.
@@ -47,6 +47,14 @@ class Index(Struct):
             for manifest in manifests:
                 mediaType = manifest.attrs.get('MediaType')
                 if mediaType.value not in valid_types:
-                    bot.error("%s is not valid for index manifest." % mediaType)
-                    return False
+
+                    # Case 1: it's a custom media type (allowed) but give warning
+                    if mediaType.validate_regexp(mediaType.value):
+                        bot.warning("%s is valid, but not registered." % mediaType.value)
+
+                    # Case 2: not valid and doesn't match regular expression
+                    else:
+                        bot.error("%s is not valid for index manifest." % mediaType)
+                        return False
+
         return True

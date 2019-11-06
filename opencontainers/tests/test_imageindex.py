@@ -157,7 +157,7 @@ index_with_custom = {
 
 
 def test_imageindex(tmp_path):
-    '''test creation of a simple sink plugin
+    '''test creation of an opencontainers Index
     '''
     index = Index()
 
@@ -192,5 +192,4 @@ def test_imageindex(tmp_path):
     index.load(index_with_required)
 
     # valid image index, with customized media type of referenced manifest
-    # TODO: need to figure out how custom works
-    # index.load(valid_with_custom)
+    index.load(index_with_custom)

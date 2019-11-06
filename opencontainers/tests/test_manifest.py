@@ -170,7 +170,7 @@ expected_bounds_fail = {
 
 
 def test_manifests(tmp_path):
-    '''test creation of a simple sink plugin
+    '''test creation of an opencontainers Manifest
     '''
     manifest = Manifest()
 

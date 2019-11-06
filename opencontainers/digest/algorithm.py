@@ -74,11 +74,11 @@ class Algorithm(StrStruct):
         # always be size*2
         hashy = hashlib.new(self._algorithm)
         if hashy.digest_size*2 != len(encoded):
-            raise ErrDigestInvalidLength
+            raise ErrDigestInvalidLength()
 
         regexp = anchoredEncodedRegexps.get(self._algorithm)
         if not regexp.search(encoded):
-            raise ErrDigestInvalidFormat
+            raise ErrDigestInvalidFormat()
         return True
 
 

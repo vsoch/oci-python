@@ -13,7 +13,7 @@ import pytest
 
 
 def test_imagelayout(tmp_path):
-    '''test creation of a simple sink plugin
+    '''test creation of an opencontainers ImageLayout
     '''
     layout = ImageLayout()
 

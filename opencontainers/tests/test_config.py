@@ -168,7 +168,7 @@ config_invalid_env = {
 
 
 def test_example_config(tmp_path):
-    '''test creation of a simple sink plugin
+    '''test creation of an opencontainers Image
     '''
     image = Image()
 
