@@ -19,6 +19,8 @@ from opencontainers.digest.exceptions import (
 )
 import os
 import io
+import string
+import random
 import pytest
 
 
@@ -27,7 +29,8 @@ def test_digests(tmp_path):
     '''test creation of an opencontainers Digest
     '''
     # Generate random bytes
-    p = b"\x00"+os.urandom(18)+b"\x00"
+    asciitext = ''.join([random.choice(string.ascii_letters) for n in range(20)]) 
+    p = bytes(asciitext, 'utf-8')
 
     for name, alg in algorithms.items():
         h = alg.hash()
@@ -38,5 +41,4 @@ def test_digests(tmp_path):
         newReader = io.BytesIO(p)
         readerDgst = alg.fromReader(newReader)
 
-        assert alg.fromBytes(p) == readerDgst 
-        #alg.fromString(string(p)) # need to figure out what this is for
+        assert alg.fromBytes(p) == readerDgst == alg.fromString(asciitext)

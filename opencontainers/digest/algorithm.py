@@ -139,9 +139,9 @@ class Algorithm(StrStruct):
         '''FromString digests the string input and returns a Digest.
            TODO not sure what this is intended for.
         '''
-        # it's bytes that someone wrapped in a string
-        #if re.search("^b('|\")", content): 
-        #    content = bytes(content[2:-1], 'utf-8')
+        if not isinstance(content, str):
+            bot.exit("input must be string")
+        content = bytes(content, 'utf-8')
         return self.fromBytes(content)
 
 
