@@ -7,14 +7,16 @@
 
 from opencontainers.struct import StrStruct
 from opencontainers.logger import bot
-import hashlib
-import re
-
+from .digester import digester
 from .exceptions import (
     ErrDigestInvalidFormat,
     ErrDigestUnsupported,
     ErrDigestInvalidLength
 )
+
+import hashlib
+import re
+import io
 
 
 class Algorithm(StrStruct):
@@ -50,15 +52,15 @@ class Algorithm(StrStruct):
            the GoLang implementation also had a Hash() function that (seemed to)
            return the same, and instead I'm going to return the same hashlib new.
         '''
-        if not self.available():
-            return None
-        return hashlib.new(self._algorithm)
+        return digester(self, self.hash())
 
 
     def hash(self):
         '''Hash returns a new hash as used by the algorithm.
         '''
-        return self.digester()
+        if not self.available():
+            return None
+        return hashlib.new(self._algorithm)
 
 
     def validate(self, encoded):
@@ -101,12 +103,46 @@ class Algorithm(StrStruct):
         if not self.available():
             raise ErrDigestUnsupported()
 
+
     def encode(self, content):
-        '''encode some content to bytes
+        '''Encode encodes the raw bytes of a digest, typically from a hash.Hash, into
+           the encoded portion of the digest.
         '''
+        # Currently, all algorithms use a hex encoding. When we
+        # add support for back registration, we can modify this accordingly.
+        # https://github.com/opencontainers/go-digest/blob/master/algorithm.go#L137
         if not isinstance(content, bytes):
             content = bytes(content, 'utf-8')
-        return content
+        return content.hex()
+
+
+    def fromReader(self, ioReader):
+        '''FromReader returns the digest of the reader using the algorithm.
+           the input must be type bytes, usually from io.BytesIO.read(). 
+           This function likely isn't needed, but is provided to mirror
+           the GoLang implementation.
+        '''
+        if not isinstance(ioReader, io.BytesIO):
+            bot.exit("input must be io.BytesIO")
+        return self.fromBytes(ioReader.read())
+
+
+    def fromBytes(self, content):
+        '''FromBytes digests the input and returns a Digest.
+        '''
+        digester = self.digester()
+        digester.hash.update(content)
+        return digester.digest()
+
+
+    def fromString(self, content):
+        '''FromString digests the string input and returns a Digest.
+           TODO not sure what this is intended for.
+        '''
+        # it's bytes that someone wrapped in a string
+        #if re.search("^b('|\")", content): 
+        #    content = bytes(content[2:-1], 'utf-8')
+        return self.fromBytes(content)
 
 
 # supported digest types only to match GoLang
@@ -133,36 +169,3 @@ anchoredEncodedRegexps = {
     SHA384: re.compile("^[a-f0-9]{96}$"),
     SHA512: re.compile("^[a-f0-9]{128}$"),
 }
-
-
-# FromReader returns the digest of the reader using the algorithm.
-#func (a Algorithm) FromReader(rd io.Reader) (Digest, error) {
-#	digester := a.Digester()
-
-#	if _, err := io.Copy(digester.Hash(), rd); err != nil {
-#		return "", err
-#	}
-
-#	return digester.Digest(), nil
-#}
-
-#// FromBytes digests the input and returns a Digest.
-#func (a Algorithm) FromBytes(p []byte) Digest {
-#	digester := a.Digester()
-
-#	if _, err := digester.Hash().Write(p); err != nil {
-#		// Writes to a Hash should never fail. None of the existing
-#		// hash implementations in the stdlib or hashes vendored
-#		// here can return errors from Write. Having a panic in this
-#		// condition instead of having FromBytes return an error value
-#		// avoids unnecessary error handling paths in all callers.
-#		panic("write to hash function returned error: " + err.Error())
-#	}
-
-#	return digester.Digest()
-#}
-
-#// FromString digests the string input and returns a Digest.
-#func (a Algorithm) FromString(s string) Digest {
-#	return a.FromBytes([]byte(s))
-#}
