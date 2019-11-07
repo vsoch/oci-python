@@ -8,6 +8,7 @@
 from opencontainers.struct import StrStruct
 from opencontainers.logger import bot
 from .algorithm import Algorithm
+from .exceptions import ErrDigestInvalidFormat
 import re
 
 
@@ -25,6 +26,7 @@ class Digest(StrStruct):
     def __init__(self, value=None):
         super().__init__(value)
 
+
     def validate(self):
         '''Validate checks that the contents of self (the digest) is valid
         '''
@@ -32,7 +34,7 @@ class Digest(StrStruct):
 
         # Must match for a digest
         if not re.search(regexp, self):
-            bot.exit("%s does not match %s" %(self, regexp))
+            raise ErrDigestInvalidFormat()
 
         algorithm, encoded = (self).split(":")
 
@@ -46,10 +48,23 @@ class Digest(StrStruct):
         return algorithm.validate(encoded)
 
     def sepIndex(self):
-        '''return the index of the : separator'''
+        '''return the index of the : separator or the index
+           that separtes the extra content provided in the algorithm name.
+        '''
+        algorithm, encoded = (self).split(":")
+        match = re.search("[+._-]", algorithm)
+        if match:
+            return match.start()
         return self.index(":", 1)
 
+    def startEncodedIndex(self):
+        '''in the case of having an extra component, return the start of the 
+           encoded portion
+        '''
+        match = re.search(":", self, 1)
+        return match.start() + 1
 
+    @property
     def algorithm(self):
         '''Algorithm returns the algorithm portion of the digest. 
         '''
@@ -59,7 +74,7 @@ class Digest(StrStruct):
     def encoded(self):
         '''Encoded returns the encoded portion of the digest.
         '''
-        return self[self.sepIndex()+1:]
+        return self[self.startEncodedIndex():]
 
 
     def verifier(self):
@@ -82,10 +97,25 @@ def NewDigestFromEncoded(algorithm, encoded):
     return Digest("%s:%s" %(algorithm, encoded))
 
 
+def NewDigestFromBytes(algorithm, content):
+    '''NewDigestFromBytes returns a new digest from the byte contents of p.
+       Typically, this can come from hash.Hash.Sum(...) or xxx.SumXXX(...)
+       functions. This is also useful for rebuilding digests from binary
+       serializations.
+    '''
+    return NewDigestFromEncoded(algorithm, algorithm.encode(content))
+
+
+def NewDigest(algorithm, hashObj):
+    '''NewDigest returns a Digest from alg and a hash object
+    '''
+    return NewDigestFromBytes(algorithm, hashObj.digest())
+
+
 def Parse(string):
     '''Parse parses s and returns the validated digest object. An error will
        be returned if the format is invalid.
     '''
-    d = Digest(s)
+    d = Digest(string)
     d.validate()
     return d

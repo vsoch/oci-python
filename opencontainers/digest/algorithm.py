@@ -67,8 +67,7 @@ class Algorithm(StrStruct):
            and the characters provided.
         '''
         if not self.available():
-            bot.error("%s is not an available algorithm." % self._algorithm)
-            return False
+            raise ErrDigestUnsupported()
 
         # Digests much always be hex-encoded, ensuring that their hex portion will
         # always be size*2
@@ -100,12 +99,15 @@ class Algorithm(StrStruct):
         '''
         self = self.load(value)
         if not self.available():
-            raise ErrDigestUnsupported
+            raise ErrDigestUnsupported()
 
+    def encode(self, content):
+        '''encode some content to bytes
+        '''
+        if not isinstance(content, bytes):
+            content = bytes(content, 'utf-8')
+        return content
 
-    # Skipped over encode, not sure about context
-    # Encode encodes the raw bytes of a digest, typically from a hash.Hash, into
-    # the encoded portion of the digest.
 
 # supported digest types only to match GoLang
 
