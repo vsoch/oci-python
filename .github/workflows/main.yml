@@ -30,7 +30,7 @@ jobs:
       
       - name: Setup OpenContainers Python environment
         run: |
-            conda env create --quiet --name ocipython
+            conda create --quiet --name ocipython
             conda install pytest
 
       - name: Run tests
