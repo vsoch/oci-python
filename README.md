@@ -11,6 +11,3 @@ This include:
  - [opencontainers/go-digest](https://github.com/opencontainers/go-digest) maps to [digest](opencontainers/digest)
 
 See the (also under development) documentation at [vsoch.github.io/oci-python](https://vsoch.github.io/oci-python).
-
-This repository is **under development** and is not ready for use! @vsoch will
-make proper docs and testing when it is.
