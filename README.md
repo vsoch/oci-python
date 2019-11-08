@@ -7,7 +7,7 @@ A simple Python implementation of Open Containers specifications. The code
 is intentionally structured to mirror the go implementations for usability.
 This include:
 
- - [opencontainers/image-spec](https://github.com/opencontainers/image-spec/tree/master/specs-go) maps to [image](opencontainers/image)
- - [opencontainers/go-digest](https://github.com/opencontainers/go-digest) maps to [digest](opencontainers/digest)
+ - [opencontainers/image-spec](https://github.com/opencontainers/image-spec/tree/master/specs-go) maps to [opencontainers/image](opencontainers/image)
+ - [opencontainers/go-digest](https://github.com/opencontainers/go-digest) maps to [opencontainers/digest](opencontainers/digest)
 
-See the (also under development) documentation at [vsoch.github.io/oci-python](https://vsoch.github.io/oci-python).
+See the documentation at [vsoch.github.io/oci-python](https://vsoch.github.io/oci-python).
