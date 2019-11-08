@@ -43,4 +43,4 @@ jobs:
           source activate ocipython
           
           # run tests
-          pytest tests/test*.py -v -x
+          pytest opencontainers/tests/test*.py -v -x
