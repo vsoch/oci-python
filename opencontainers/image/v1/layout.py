@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -14,15 +13,21 @@ ImageLayoutFile = "oci-layout"
 ImageLayoutVersion = "1.0.0"
 
 
-class ImageLayout(Struct): 
-    '''ImageLayout is the structure in the "oci-layout" file, found in the root 
+class ImageLayout(Struct):
+    """ImageLayout is the structure in the "oci-layout" file, found in the root 
        of an OCI Image-layout directory.
-    '''
+    """
+
     def __init__(self, version=None):
         super().__init__()
 
         # This is for semver, but without the v
         regexp = r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patchlevel>\d+)~?(?P<special>[a-z]\w+[\d+])?$"
-        self.newAttr(name="Version", attType=str, jsonName="imageLayoutVersion",
-                     required=True, regexp=regexp)
+        self.newAttr(
+            name="Version",
+            attType=str,
+            jsonName="imageLayoutVersion",
+            required=True,
+            regexp=regexp,
+        )
         self.add("Version", version or ImageLayoutVersion)

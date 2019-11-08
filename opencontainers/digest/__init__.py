@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -6,22 +5,16 @@
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from .digest import (
-    Digest, 
+    Digest,
     DigestRegexp,
     DigestRegexpAnchored,
     NewDigestFromEncoded,
     NewDigest,
     FromString,
     FromBytes,
-    Parse
+    Parse,
 )
 
-from .algorithm import (
-    Algorithm,
-    SHA256,
-    SHA384,
-    SHA512,
-    Canonical
-)
+from .algorithm import Algorithm, SHA256, SHA384, SHA512, Canonical
 
 from .verifiers import hashVerifier

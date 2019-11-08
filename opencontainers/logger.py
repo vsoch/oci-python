@@ -1,4 +1,3 @@
-
 # Copyright (C) 2017-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -29,9 +28,8 @@ CYAN = "\033[36m"
 
 
 class OCILogger:
-
     def __init__(self, logfile=None, level=None):
-        '''the logger is based on discovery in the environment, and is
+        """the logger is based on discovery in the environment, and is
            initialized by the plugin. By default we print logs to an output
            file that is named according to the plugin, unless the user
            sets the level to quiet.
@@ -40,84 +38,80 @@ class OCILogger:
            ==========
            logfile: should be the path to write the logfile
            level: can be an integer or string level, defaults to DEBUG
-        '''
+        """
         self.level = get_logging_level(level)
         self.logfile = logfile
         self.errorStream = sys.stderr
         self.outputStream = sys.stdout
         self.colorize = self.useColor()
-        self.colors = {ABORT: DARKRED,
-                       CRITICAL: RED,
-                       ERROR: RED,    
-                       WARNING: YELLOW,  
-                       LOG: PURPLE,      
-                       CUSTOM: PURPLE,       
-                       DEBUG: CYAN,      
-                       'OFF': "\033[0m", # end sequence
-                       'CYAN':CYAN,
-                       'PURPLE':PURPLE,
-                       'RED':RED,
-                       'DARKRED':DARKRED,
-                       'YELLOW':YELLOW}
-                       
+        self.colors = {
+            ABORT: DARKRED,
+            CRITICAL: RED,
+            ERROR: RED,
+            WARNING: YELLOW,
+            LOG: PURPLE,
+            CUSTOM: PURPLE,
+            DEBUG: CYAN,
+            "OFF": "\033[0m",  # end sequence
+            "CYAN": CYAN,
+            "PURPLE": PURPLE,
+            "RED": RED,
+            "DARKRED": DARKRED,
+            "YELLOW": YELLOW,
+        }
 
     # Colors --------------------------------------------
 
     def useColor(self):
-        '''useColor will determine if color should be added
+        """useColor will determine if color should be added
            to a print. If logging to file, no color is used. Otherwise, we
            check if being run in a terminal, and if has support for ascii
-        '''
+        """
         if self.logfile:
             return False
 
         streams = [self.errorStream, self.outputStream]
         for stream in streams:
-            if not hasattr(stream, 'isatty') or not stream.isatty():
+            if not hasattr(stream, "isatty") or not stream.isatty():
                 return False
         return True
 
-
     def addColor(self, level, text):
-        '''addColor to the prompt (usually prefix) if terminal
+        """addColor to the prompt (usually prefix) if terminal
            supports, and specified to do so
-        '''
+        """
         if self.colorize:
             if level in self.colors:
-                text = "%s%s%s" % (self.colors[level],
-                                   text,
-                                   self.colors["OFF"])
+                text = "%s%s%s" % (self.colors[level], text, self.colors["OFF"])
         return text
 
-
     def emitError(self, level):
-        '''determine if a level should print to
+        """determine if a level should print to
            stderr, includes all levels but INFO and QUIET
-        '''
-        return level in [ABORT,
-                         ERROR,
-                         WARNING,
-                         VERBOSE,
-                         VERBOSE1,
-                         VERBOSE2,
-                         VERBOSE3,
-                         DEBUG]
-
+        """
+        return level in [
+            ABORT,
+            ERROR,
+            WARNING,
+            VERBOSE,
+            VERBOSE1,
+            VERBOSE2,
+            VERBOSE3,
+            DEBUG,
+        ]
 
     def emitOutput(self, level):
-        '''determine if a level should print to stdout (only INFO and LOG)
-        '''
+        """determine if a level should print to stdout (only INFO and LOG)
+        """
         return level in [LOG, INFO]
 
-
     def isEnabledFor(self, messageLevel):
-        '''check if a messageLevel is enabled to emit a level
-        '''
+        """check if a messageLevel is enabled to emit a level
+        """
         return messageLevel <= self.level and not self.is_quiet()
 
-
     def emit(self, level, message, prefix=None, color=None):
-        '''emit is the main function to print the message
+        """emit is the main function to print the message
            optionally with a prefix. If we have a logfile, we print
            to it instead.
 
@@ -126,7 +120,7 @@ class OCILogger:
            level: the level of the message
            message: the message to print
            prefix: a prefix for the message
-        '''
+        """
         if color is None:
             color = level
 
@@ -139,7 +133,7 @@ class OCILogger:
         # Add the prefix
         message = "%s%s" % (prefix, message)
 
-        if not message.endswith('\n'):
+        if not message.endswith("\n"):
             message = "%s\n" % message
 
         # Case 1: print logs to file (must be enabled and not quiet)
@@ -154,44 +148,41 @@ class OCILogger:
                 self.write(self.outputStream, message)
 
     def write(self, stream, message):
-        '''write a message to a stream, and check the encoding
-        '''
+        """write a message to a stream, and check the encoding
+        """
         if isinstance(message, bytes):
-            message = message.decode('utf-8')
+            message = message.decode("utf-8")
         stream.write(message)
 
-
     def writeFile(self, message):
-        '''write a message to a stream, and check the encoding
-        '''
+        """write a message to a stream, and check the encoding
+        """
         if isinstance(message, bytes):
-            message = message.decode('utf-8')
+            message = message.decode("utf-8")
 
-        with open(self.logfile, 'a') as filey:
+        with open(self.logfile, "a") as filey:
             filey.writelines(message)
-
 
     # Logging ------------------------------------------
 
-
     def abort(self, message):
-        self.emit(ABORT, message, 'ABORT')
+        self.emit(ABORT, message, "ABORT")
 
     def critical(self, message):
-        self.emit(CRITICAL, message, 'CRITICAL')
+        self.emit(CRITICAL, message, "CRITICAL")
 
     def error(self, message):
-        self.emit(ERROR, message, 'ERROR')
+        self.emit(ERROR, message, "ERROR")
 
     def exit(self, message, return_code=1):
-        self.emit(ERROR, message, 'ERROR')
+        self.emit(ERROR, message, "ERROR")
         sys.exit(return_code)
 
     def warning(self, message):
-        self.emit(WARNING, message, 'WARNING')
+        self.emit(WARNING, message, "WARNING")
 
     def log(self, message):
-        self.emit(LOG, message, 'LOG')
+        self.emit(LOG, message, "LOG")
 
     def custom(self, prefix, message="", color=PURPLE):
         self.emit(CUSTOM, message, prefix, color)
@@ -209,23 +200,23 @@ class OCILogger:
         self.emit(VERBOSE, message, "VERBOSE1")
 
     def verbose2(self, message):
-        self.emit(VERBOSE2, message, 'VERBOSE2')
+        self.emit(VERBOSE2, message, "VERBOSE2")
 
     def verbose3(self, message):
-        self.emit(VERBOSE3, message, 'VERBOSE3')
+        self.emit(VERBOSE3, message, "VERBOSE3")
 
     def debug(self, message):
-        self.emit(DEBUG, message, 'DEBUG')
+        self.emit(DEBUG, message, "DEBUG")
 
     def is_quiet(self):
-        '''is_quiet returns true if the level is 0
-        '''
+        """is_quiet returns true if the level is 0
+        """
         return self.level == QUIET
 
 
 def get_logging_level(default_level=None):
-    '''get_logging_level based on an int or user specific string, default INFO
-    '''
+    """get_logging_level based on an int or user specific string, default INFO
+    """
     if not default_level:
         default_level = DEBUG
     level = os.environ.get("MESSAGELEVEL", default_level)
@@ -257,5 +248,6 @@ def get_logging_level(default_level=None):
         return DEBUG
 
     return level
+
 
 bot = OCILogger()

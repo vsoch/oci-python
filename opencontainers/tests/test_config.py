@@ -15,11 +15,11 @@ config_invalid_os = {
     "architecture": "amd64",
     "os": 123,
     "rootfs": {
-      "diff_ids": [
-        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
-      ],
-      "type": "layers"
-    }
+        "diff_ids": [
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "type": "layers",
+    },
 }
 
 config_invalid_user = {
@@ -27,15 +27,13 @@ config_invalid_user = {
     "author": "Alyssa P. Hacker <alyspdev@example.com>",
     "architecture": "amd64",
     "os": "linux",
-    "config": {
-        "User": 1234
-    },
+    "config": {"User": 1234},
     "rootfs": {
-      "diff_ids": [
-        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
-      ],
-      "type": "layers"
-    }
+        "diff_ids": [
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "type": "layers",
+    },
 }
 
 config_invalid_history = {
@@ -43,45 +41,36 @@ config_invalid_history = {
     "architecture": "amd64",
     "os": "linux",
     "rootfs": {
-      "diff_ids": [
-        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
-      ],
-      "type": "layers"
-    }
+        "diff_ids": [
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "type": "layers",
+    },
 }
 
 config_invalid_envint = {
     "architecture": "amd64",
     "os": "linux",
-    "config": {
-        "Env": [
-            7353
-        ]
-    },
+    "config": {"Env": [7353]},
     "rootfs": {
-      "diff_ids": [
-        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
-      ],
-      "type": "layers"
-    }
+        "diff_ids": [
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "type": "layers",
+    },
 }
 
 
 config_invalid_volumes = {
     "architecture": "amd64",
     "os": "linux",
-    "config": {
-        "Volumes": [
-            "/var/job-result-data",
-            "/var/log/my-app-logs"
-        ]
-    },
+    "config": {"Volumes": ["/var/job-result-data", "/var/log/my-app-logs"]},
     "rootfs": {
-      "diff_ids": [
-        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
-      ],
-      "type": "layers"
-    }
+        "diff_ids": [
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "type": "layers",
+    },
 }
 
 config_valid_with_optional = {
@@ -91,85 +80,70 @@ config_valid_with_optional = {
     "os": "linux",
     "config": {
         "User": "1:1",
-        "ExposedPorts": {
-            "8080/tcp": {}
-        },
+        "ExposedPorts": {"8080/tcp": {}},
         "Env": [
             "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
             "FOO=docker_is_a_really",
-            "BAR=great_tool_you_know"
+            "BAR=great_tool_you_know",
         ],
-        "Entrypoint": [
-            "/bin/sh"
-        ],
-        "Cmd": [
-            "--foreground",
-            "--config",
-            "/etc/my-app.d/default.cfg"
-        ],
-        "Volumes": {
-            "/var/job-result-data": {},
-            "/var/log/my-app-logs": {}
-        },
+        "Entrypoint": ["/bin/sh"],
+        "Cmd": ["--foreground", "--config", "/etc/my-app.d/default.cfg"],
+        "Volumes": {"/var/job-result-data": {}, "/var/log/my-app-logs": {}},
         "StopSignal": "SIGKILL",
         "WorkingDir": "/home/alice",
         "Labels": {
             "com.example.project.git.url": "https://example.com/project.git",
-            "com.example.project.git.commit": "45a939b2999782a3f005621a8d0f29aa387e1d6b"
-        }
+            "com.example.project.git.commit": "45a939b2999782a3f005621a8d0f29aa387e1d6b",
+        },
     },
     "rootfs": {
-      "diff_ids": [
-        "sha256:9d3dd9504c685a304985025df4ed0283e47ac9ffa9bd0326fddf4d59513f0827",
-        "sha256:2b689805fbd00b2db1df73fae47562faac1a626d5f61744bfe29946ecff5d73d"
-      ],
-      "type": "layers"
+        "diff_ids": [
+            "sha256:9d3dd9504c685a304985025df4ed0283e47ac9ffa9bd0326fddf4d59513f0827",
+            "sha256:2b689805fbd00b2db1df73fae47562faac1a626d5f61744bfe29946ecff5d73d",
+        ],
+        "type": "layers",
     },
     "history": [
-      {
-        "created": "2015-10-31T22:22:54.690851953Z",
-        "created_by": "/bin/sh -c #(nop) ADD file:a3bc1e842b69636f9df5256c49c5374fb4eef1e281fe3f282c65fb853ee171c5 in /"
-      },
-      {
-        "created": "2015-10-31T22:22:55.613815829Z",
-        "created_by": "/bin/sh -c #(nop) CMD [\"sh\"]",
-        "empty_layer": True
-      }
-    ]
+        {
+            "created": "2015-10-31T22:22:54.690851953Z",
+            "created_by": "/bin/sh -c #(nop) ADD file:a3bc1e842b69636f9df5256c49c5374fb4eef1e281fe3f282c65fb853ee171c5 in /",
+        },
+        {
+            "created": "2015-10-31T22:22:55.613815829Z",
+            "created_by": '/bin/sh -c #(nop) CMD ["sh"]',
+            "empty_layer": True,
+        },
+    ],
 }
 
 config_valid_required = {
     "architecture": "amd64",
     "os": "linux",
     "rootfs": {
-      "diff_ids": [
-        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
-      ],
-      "type": "layers"
-    }
+        "diff_ids": [
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "type": "layers",
+    },
 }
 
 
 config_invalid_env = {
     "architecture": "amd64",
     "os": "linux",
-    "config": {
-        "Env": [
-            "foo"
-        ]
-    },
+    "config": {"Env": ["foo"]},
     "rootfs": {
-      "diff_ids": [
-        "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
-      ],
-      "type": "layers"
-    }
+        "diff_ids": [
+            "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "type": "layers",
+    },
 }
 
 
 def test_example_config(tmp_path):
-    '''test creation of an opencontainers Image
-    '''
+    """test creation of an opencontainers Image
+    """
     image = Image()
 
     # OS is int, and is invalid
@@ -199,7 +173,7 @@ def test_example_config(tmp_path):
     # valid config with optional fields
     image.load(config_valid_with_optional)
     assert image.validate()
- 
+
     # minimum valid required
     image.load(config_valid_required)
     assert image.validate()

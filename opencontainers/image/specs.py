@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -20,11 +19,12 @@ VersionPatch = 1
 VersionDev = "-dev"
 
 # Version is the specification version that the package types support.
-Version = "%d.%d.%d%s" %(VersionMajor, VersionMinor, VersionPatch, VersionDev)
+Version = "%d.%d.%d%s" % (VersionMajor, VersionMinor, VersionPatch, VersionDev)
 
 # Versioned provides a struct with the manifest schemaVersion and mediaType.
 # Incoming content with unknown schema version can be decoded against this
 # struct to check the version.
+
 
 class Versioned(IntStruct):
     def __init__(self, schemaVersion=None):

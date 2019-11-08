@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -31,17 +30,23 @@ MediaTypeImageLayerZstd = "application/vnd.oci.image.layer.v1.tar+zstd"
 
 # MediaTypeImageLayerNonDistributable is the media type for layers referenced by
 # the manifest but with distribution restrictions.
-MediaTypeImageLayerNonDistributable = "application/vnd.oci.image.layer.nondistributable.v1.tar"
+MediaTypeImageLayerNonDistributable = (
+    "application/vnd.oci.image.layer.nondistributable.v1.tar"
+)
 
 # MediaTypeImageLayerNonDistributableGzip is the media type for
 # gzipped layers referenced by the manifest but with distribution
 # restrictions.
-MediaTypeImageLayerNonDistributableGzip = "application/vnd.oci.image.layer.nondistributable.v1.tar+gzip"
+MediaTypeImageLayerNonDistributableGzip = (
+    "application/vnd.oci.image.layer.nondistributable.v1.tar+gzip"
+)
 
 # MediaTypeImageLayerNonDistributableZstd is the media type for zstd#
 # compressed layers referenced by the manifest but with distribution
 # restrictions.
-MediaTypeImageLayerNonDistributableZstd = "application/vnd.oci.image.layer.nondistributable.v1.tar+zstd"
+MediaTypeImageLayerNonDistributableZstd = (
+    "application/vnd.oci.image.layer.nondistributable.v1.tar+zstd"
+)
 
 # MediaTypeImageConfig specifies the media type for the image configuration.
 MediaTypeImageConfig = "application/vnd.oci.image.config.v1+json"

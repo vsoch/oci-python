@@ -11,10 +11,9 @@ import os
 import pytest
 
 
-
 def test_imagelayout(tmp_path):
-    '''test creation of an opencontainers ImageLayout
-    '''
+    """test creation of an opencontainers ImageLayout
+    """
     layout = ImageLayout()
 
     # expected faulure:  imageLayoutVersion does not match pattern or type
@@ -23,6 +22,6 @@ def test_imagelayout(tmp_path):
 
     with pytest.raises(SystemExit):
         layout.load({"imageLayoutVersion": "1.0"})
-    
+
     # valid layout
     layout.load({"imageLayoutVersion": "1.0.0"})
