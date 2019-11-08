@@ -28,32 +28,19 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       
-      - name: Setup Snakemake environment
-        run: conda env create --quiet --name ocipython
+      - name: Setup OpenContainers Python environment
+        run: |
+            conda env create --quiet --name ocipython
+            conda install pytest
 
       - name: Run tests
         env:
           CI: true
         run: |
-          # enable coverage recording for subprocesses
-                echo -e "try:\n    import coverage\n    coverage.process_startup()\nexcept:\n    pass" > sitecustomize.py
-          export COVERAGE_PROCESS_START=.coveragerc
 
           # activate conda env
           export PATH="/usr/share/miniconda/bin:$PATH"
-          source activate snakemake
+          source activate ocipython
           
           # run tests
-          coverage run -m pytest tests/test*.py -v -x
-
-          # collect coverage report
-          #coverage combine
-          #coverage xml
-
-          #- name: Upload coverage report
-          #uses: codecov/codecov-action@v1.0.3
-          #with:
-          #token: ${{secrets.CODECOV_TOKEN}}
-
-      - name: Build container image
-        run: docker build .
+          pytest tests/test*.py -v -x
