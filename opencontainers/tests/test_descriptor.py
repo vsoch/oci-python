@@ -209,15 +209,15 @@ def test_descriptor(tmp_path):
         desc.load(digest_missing)
 
     # expected failure: digest does not match pattern (no algorithm)
-    with pytest.raises(SystemExit):
+    with pytest.raises(ErrDigestInvalidFormat):
         desc.load(no_algorithm)
 
     # expected failure: digest does not match pattern (no hash)
-    with pytest.raises(SystemExit):
+    with pytest.raises(ErrDigestInvalidFormat):
         desc.load(no_hash)
 
     # expected failure: digest does not match pattern (invalid aglorithm characters)
-    with pytest.raises(SystemExit):
+    with pytest.raises(ErrDigestInvalidFormat):
         desc.load(invalid_algchars)
 
     # expected failure: digest does not match pattern (characters needs to be lower for sha256)
@@ -236,7 +236,7 @@ def test_descriptor(tmp_path):
         desc.load(valid)
 
     # fail: repeated separators in algorithm
-    with pytest.raises(SystemExit):
+    with pytest.raises(ErrDigestInvalidFormat):
         desc.load(repeated_seps_invalid)
 
     # invalid digest length (also chars)

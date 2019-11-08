@@ -7,6 +7,7 @@
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from opencontainers.image.v1 import Manifest
+from opencontainers.digest.exceptions import ErrDigestInvalidFormat
 import os
 import pytest
 
@@ -197,5 +198,5 @@ def test_manifests(tmp_path):
     manifest.load(expected_bounds_pass)
 
     # expected failure: push bounds of algorithm field in digest too far.
-    with pytest.raises(SystemExit):
+    with pytest.raises(ErrDigestInvalidFormat):
         manifest.load(expected_bounds_fail)
