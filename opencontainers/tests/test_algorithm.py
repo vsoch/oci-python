@@ -7,10 +7,7 @@
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 from opencontainers.digest import Digest, FromBytes
-from opencontainers.digest.algorithm import (
-    Algorithm,
-    algorithms,
-)
+from opencontainers.digest.algorithm import Algorithm, algorithms
 
 from opencontainers.digest.exceptions import (
     ErrDigestInvalidLength,
