@@ -6,7 +6,10 @@
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-from opencontainers.digest import Digest
+from opencontainers.digest import (
+    Digest,
+    FromBytes
+)
 from opencontainers.digest.algorithm import (
     Algorithm,
     algorithms,
@@ -25,8 +28,8 @@ import pytest
 
 
 
-def test_digests(tmp_path):
-    '''test creation of an opencontainers Digest
+def test_algorithms(tmp_path):
+    '''test creation of an opencontainers Algorithm
     '''
     # Generate random bytes
     asciitext = ''.join([random.choice(string.ascii_letters) for n in range(20)]) 

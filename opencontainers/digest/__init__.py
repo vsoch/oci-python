@@ -10,6 +10,9 @@ from .digest import (
     DigestRegexp,
     DigestRegexpAnchored,
     NewDigestFromEncoded,
+    NewDigest,
+    FromString,
+    FromBytes,
     Parse
 )
 
@@ -20,3 +23,5 @@ from .algorithm import (
     SHA512,
     Canonical
 )
+
+from .verifiers import hashVerifier

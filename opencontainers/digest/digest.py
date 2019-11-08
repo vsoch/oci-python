@@ -30,6 +30,9 @@ class Digest(StrStruct):
     def validate(self):
         '''Validate checks that the contents of self (the digest) is valid
         '''
+        if not self:
+            bot.exit("Empty digest")
+
         regexp = "^[a-z0-9]+(?:[+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+$"
 
         # Must match for a digest
@@ -51,7 +54,15 @@ class Digest(StrStruct):
         '''return the index of the : separator or the index
            that separtes the extra content provided in the algorithm name.
         '''
-        algorithm, encoded = (self).split(":")
+        try:
+            algorithm, encoded = (self).split(":")
+        except:
+            bot.exit("empty digest or algorithm") 
+
+        # Empty algorithm or encoded portion
+        if not algorithm or not encoded:
+            bot.exit("empty digest or algorithm") 
+
         match = re.search("[+._-]", algorithm)
         if match:
             return match.start()
@@ -82,7 +93,10 @@ class Digest(StrStruct):
            content against the digest. If the digest is invalid, the method will panic.
         '''
         from .verifiers import hashVerifier
-        return hashVerifier(self.algorithm.hash(), digest=self)
+        hashObj = self.algorithm.hash()
+        if not hashObj:
+            bot.exit("Algorithm is not available")
+        return hashVerifier(hashObj, digest=self)
 
 
 # DigestRegexp matches valid digest types.
@@ -110,6 +124,19 @@ def NewDigest(algorithm, hashObj):
     '''NewDigest returns a Digest from alg and a hash object
     '''
     return NewDigestFromBytes(algorithm, hashObj.digest())
+
+
+def FromBytes(p):
+    '''FromBytes digests the input and returns a Digest.
+    '''
+    from .algorithm import Canonical
+    return Canonical.fromBytes(p)
+
+
+def FromString(p):
+    '''FromString digests the input and returns a Digest.
+    '''
+    return Canonical.fromString(p)
 
 
 def Parse(string):

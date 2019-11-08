@@ -7,52 +7,31 @@
 
 from opencontainers.struct import Struct
 from hashlib import new
-from .digest import Digest
+from .digest import (
+    Digest, 
+    NewDigest
+)
 
 class hashVerifier(Struct):
     def __init__(self, hashObj=None, digest=None):
 
         super().__init__()
 
-        self.newAttr(name="hash", attType=new)
-        self.newAttr(name="digest", attType=Digest)
-        self.add("digest", digest)
-        self.add("hash", hashObj)
+        self.hash = hashObj
+        self.digest = digest
 
     def write(self, content):
         '''add bytes of content to the hash object
         '''
         if not isinstance(content, bytes):
             content = bytes(content, 'utf-8')
-            self.attrs["hash"].update(content)
+        self.hash.update(content)
+        self.digest = NewDigest(self.digest.algorithm, self.hash)
+        self.digest.validate()
 
     def verified(self):
         '''calculate the hex digest against the digest
         '''
-        return self.attrs["digest"] == self.attrs['hash'].hexdigest()
+        return self.digest == NewDigest(self.digest.algorithm, self.hash)
 
-
-class Verifier(object):
-    '''Verifier presents a general verification interface to be used with message
-       digests and other byte stream verifications. Users instantiate a Verifier
-       from one of the various methods, write the data under test to it then check
-       the result with the Verified method.
-    '''
-    def __init__(self, writer=None):
-
-        self.writer = writer
-        self.verified = False
-
-
-# TODO not sure how to represent this
-#type Verifier interface {
-#	io.Writer
-
-#	// Verified will return true if the content written to Verifier matches
-#	// the digest.
-#	Verified() bool
-#}
-
-
-
-
+# The GoLang implementation has another Verifier class, not used here
