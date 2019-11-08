@@ -10,7 +10,7 @@ This is a basic Python implementation of the [opencontainers](https://github.com
 The intention is for you to be able to load or create different kinds of
 manifests and objects using Python.
 
-{% include alert.html type="info" title="Under Development!" content="This code base is under development! Please check back every so often for updates. The image specification is developed, and I am currently writing tests." %}
+{% include alert.html type="info" title="What are your use cases?" content="How would you want to use OpenContainers Python? @vsoch is looking for interesting and fun use cases, so please open an issue if you have ideas." %}
 
 ## Support
 

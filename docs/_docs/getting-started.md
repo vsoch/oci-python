@@ -21,8 +21,6 @@ cd {{ site.github_repo }}
 python setup.py install
 ```
 
-{% include alert.html type="info" title="Under Development!" content="Note that there are currently no usable versions pushed to pypi, so you are best to test with installation from source." %}
-
 ## Image Specification
 
 ### Image
