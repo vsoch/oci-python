@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -12,12 +11,22 @@ from datetime import datetime
 
 
 class ImageConfig(Struct):
-    '''ImageConfig defines the execution parameters which should be used as a
+    """ImageConfig defines the execution parameters which should be used as a
        base when running a container using an image.
-    '''
-    def __init__(self, user=None, ports=None, env=None, entrypoint=None, 
-                       cmd=None, volumes=None, workingDir=None, labels=None,
-                       stopSignal=None):
+    """
+
+    def __init__(
+        self,
+        user=None,
+        ports=None,
+        env=None,
+        entrypoint=None,
+        cmd=None,
+        volumes=None,
+        workingDir=None,
+        labels=None,
+        stopSignal=None,
+    ):
 
         super().__init__()
 
@@ -28,7 +37,9 @@ class ImageConfig(Struct):
         self.newAttr(name="ExposedPorts", attType=dict)
 
         # Env is a list of environment variables to be used in a container.
-        self.newAttr(name="Env", attType=[str], regexp="^(?P<var_name>.+?)=(?P<var_value>.+)")
+        self.newAttr(
+            name="Env", attType=[str], regexp="^(?P<var_name>.+?)=(?P<var_value>.+)"
+        )
 
         # Entrypoint defines a list of arguments to use as the command to execute when the container starts.
         self.newAttr(name="Entrypoint", attType=list)
@@ -57,11 +68,12 @@ class ImageConfig(Struct):
         self.add("WorkingDir", workingDir)
         self.add("Labels", labels)
         self.add("StopSignal", stopSignal)
- 
+
 
 class RootFS(Struct):
-    ''' RootFS describes a layer content addresses
-    '''
+    """ RootFS describes a layer content addresses
+    """
+
     def __init__(self, rootfs_type=None, diff_ids=None):
         super().__init__()
 
@@ -69,20 +81,24 @@ class RootFS(Struct):
         self.newAttr(name="RootFSType", attType=str, omitempty=False, jsonName="type")
 
         # DiffIDs is an array of layer content hashes (DiffIDs), in order from bottom-most to top-most.
-        self.newAttr(name="DiffIDs", attType=[Digest], omitempty=False, jsonName="diff_ids")
+        self.newAttr(
+            name="DiffIDs", attType=[Digest], omitempty=False, jsonName="diff_ids"
+        )
 
         self.add("RootFSType", rootfs_type)
-        self.add("DiffIDs", diff_ids) 
+        self.add("DiffIDs", diff_ids)
 
 
 class History(Struct):
-    '''History describes the history of a layer.
-    ''' 
-    def __init__(self, created=None, created_by=None, author=None, comment=None,
-                       empty_layer=None):
+    """History describes the history of a layer.
+    """
+
+    def __init__(
+        self, created=None, created_by=None, author=None, comment=None, empty_layer=None
+    ):
 
         super().__init__()
-      
+
         # Created is the combined date and time at which the layer was created, formatted as defined by RFC 3339, section 5.6.
         self.newAttr("Created", attType=datetime, jsonName="created")
 
@@ -106,12 +122,21 @@ class History(Struct):
 
 
 class Image(Struct):
-    '''Image is the JSON structure which describes some basic information about 
+    """Image is the JSON structure which describes some basic information about 
        the image. This provides the `application/vnd.oci.image.config.v1+json` 
        mediatype when marshalled to JSON.
-    '''
-    def __init__(self, created=None, author=None, arch=None, imageOS=None,
-                       imageConfig=None, rootfs=None, hist=None):
+    """
+
+    def __init__(
+        self,
+        created=None,
+        author=None,
+        arch=None,
+        imageOS=None,
+        imageConfig=None,
+        rootfs=None,
+        hist=None,
+    ):
 
         super().__init__()
 
@@ -120,9 +145,11 @@ class Image(Struct):
 
         # Author defines the name and/or email address of the person or entity which created and is responsible for maintaining the image.
         self.newAttr("Author", attType=str, jsonName="author")
-        
+
         # Architecture is the CPU architecture which the binaries in this image are built to run on.
-        self.newAttr(name="Architecture", attType=str, jsonName="architecture", required=True)
+        self.newAttr(
+            name="Architecture", attType=str, jsonName="architecture", required=True
+        )
 
         # OS is the name of the operating system which the image is built to run on.
         self.newAttr("OS", attType=str, jsonName="os", required=True)

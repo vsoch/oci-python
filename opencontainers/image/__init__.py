@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -11,5 +10,5 @@ from .specs import (
     VersionPatch,
     VersionDev,
     Version,
-    Versioned
+    Versioned,
 )

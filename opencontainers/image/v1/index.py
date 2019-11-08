@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -8,25 +7,26 @@
 from opencontainers.struct import Struct
 from opencontainers.image.specs import Versioned
 from opencontainers.logger import bot
-from .mediatype import (
-    MediaTypeImageIndex, 
-    MediaTypeImageManifest
-)
+from .mediatype import MediaTypeImageIndex, MediaTypeImageManifest
 from .descriptor import Descriptor
 import re
 
+
 class Index(Struct):
-    '''Index references manifests for various platforms.
+    """Index references manifests for various platforms.
        This structure provides `application/vnd.oci.image.index.v1+json` 
        mediatype when marshalled to JSON.
-    '''
+    """
+
     def __init__(self, manifests=None, schemaVersion=None, annotations=None):
         super().__init__()
 
         self.newAttr(name="schemaVersion", attType=Versioned, required=True)
 
         # Manifests references platform specific manifests.
-        self.newAttr(name="Manifests", attType=[Descriptor], jsonName="manifests", required=True)
+        self.newAttr(
+            name="Manifests", attType=[Descriptor], jsonName="manifests", required=True
+        )
 
         # Annotations contains arbitrary metadata for the image index.
         self.newAttr(name="Annotations", attType=dict, jsonName="annotations")
@@ -35,22 +35,23 @@ class Index(Struct):
         self.add("Annotations", annotations)
         self.add("schemaVersion", schemaVersion)
 
-
     def _validate(self):
-        '''custom validation function to ensure that Manifests mediaTypes
+        """custom validation function to ensure that Manifests mediaTypes
            are valid.
-        '''
+        """
         valid_types = [MediaTypeImageManifest, MediaTypeImageIndex]
 
-        manifests = self.attrs.get('Manifests').value
+        manifests = self.attrs.get("Manifests").value
         if manifests:
             for manifest in manifests:
-                mediaType = manifest.attrs.get('MediaType')
+                mediaType = manifest.attrs.get("MediaType")
                 if mediaType.value not in valid_types:
 
                     # Case 1: it's a custom media type (allowed) but give warning
                     if mediaType.validate_regexp(mediaType.value):
-                        bot.warning("%s is valid, but not registered." % mediaType.value)
+                        bot.warning(
+                            "%s is valid, but not registered." % mediaType.value
+                        )
 
                     # Case 2: not valid and doesn't match regular expression
                     else:

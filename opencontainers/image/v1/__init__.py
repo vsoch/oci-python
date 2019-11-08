@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -17,26 +16,15 @@ from .annotations import (
     AnnotationLicenses,
     AnnotationRefName,
     AnnotationTitle,
-    AnnotationDescription
+    AnnotationDescription,
 )
 
-from .config import (
-    ImageConfig,
-    RootFS,
-    Image
-)
+from .config import ImageConfig, RootFS, Image
 
-from .descriptor import (
-    Descriptor,
-    Platform
-)
+from .descriptor import Descriptor, Platform
 
 from .index import Index
-from .layout import (
-    ImageLayoutFile,
-    ImageLayoutVersion,
-    ImageLayout
-)
+from .layout import ImageLayoutFile, ImageLayoutVersion, ImageLayout
 
 from .manifest import Manifest
 
@@ -51,5 +39,5 @@ from .mediatype import (
     MediaTypeImageLayerNonDistributable,
     MediaTypeImageLayerNonDistributableGzip,
     MediaTypeImageLayerNonDistributableZstd,
-    MediaTypeImageConfig
+    MediaTypeImageConfig,
 )

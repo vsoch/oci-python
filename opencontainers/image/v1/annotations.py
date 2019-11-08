@@ -1,4 +1,3 @@
-
 # Copyright (C) 2019-2020 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
@@ -6,7 +5,7 @@
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# AnnotationCreated is the annotation key for the date and time on which the image was built (date-time string as defined by RFC 3339). 
+# AnnotationCreated is the annotation key for the date and time on which the image was built (date-time string as defined by RFC 3339).
 AnnotationCreated = "org.opencontainers.image.created"
 
 # AnnotationAuthors is the annotation key for the contact details of the people or organization responsible for the image (freeform string).
