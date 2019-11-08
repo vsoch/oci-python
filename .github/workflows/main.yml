@@ -1,4 +1,4 @@
-name: OpenContainers Python Testing
+name: oci-python-ci
 
 on:
   push:
