@@ -8,8 +8,8 @@
           url: "docs/getting-started#getting-started"
         - title: Image Specification
           url: "docs/getting-started#image-specification"
-        - title: Image Manifests
-          url: "docs/getting-started#image-manifest"
+        - title: Digests
+          url: "docs/getting-started#digest
     - title: "About"
       url: "about"
     - title: "News"
