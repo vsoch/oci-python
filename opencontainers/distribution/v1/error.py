@@ -15,19 +15,12 @@ ErrRegistry = "distribution: registry returned error"
 class ErrorInfo(Struct):
     """ErrorInfo describes a server error returned from a registry.
     """
-    def __init__(
-        self, code, message, detail
-    ):
+
+    def __init__(self, code, message, detail):
         super().__init__()
-        self.newAttr(
-            name="Code", attType=str, jsonName="code", required=True
-        )
-        self.newAttr(
-            name="Message", attType=str, jsonName="message", required=True
-        )
-        self.newAttr(
-            name="Detail", attType=str, jsonName="detail", required=True
-        )
+        self.newAttr(name="Code", attType=str, jsonName="code", required=True)
+        self.newAttr(name="Message", attType=str, jsonName="message", required=True)
+        self.newAttr(name="Detail", attType=str, jsonName="detail", required=True)
 
         self.add("Code", code)
         self.add("Message", message)
@@ -37,15 +30,13 @@ class ErrorInfo(Struct):
 class ErrorResponse(Struct):
     """ErrorResponse is returned by a registry on an invalid request.
     """
-    def __init__(
-        self, errors=None
-    ):
+
+    def __init__(self, errors=None):
         super().__init__()
         self.newAttr(
             name="Errors", attType=[ErrorInfo], jsonName="errors", required=True
         )
         self.add("Errors", errors or [])
-
 
     def Error(self):
         """Error implements the Error interface.
@@ -61,9 +52,8 @@ class ErrorResponse(Struct):
 class ErrRegistry(Struct):
     """ErrorResponse is returned by a registry on an invalid request.
     """
-    def __init__(
-        self, errors=None
-    ):
+
+    def __init__(self, errors=None):
         super().__init__()
         self.newAttr(
             name="Errors", attType=[ErrorInfo], jsonName="errors", required=True

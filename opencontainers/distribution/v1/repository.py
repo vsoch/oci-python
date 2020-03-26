@@ -8,12 +8,12 @@
 from opencontainers.struct import Struct
 from opencontainers.logger import bot
 
+
 class RepositoryList(Struct):
     """RepositoryList returns a catalog of repositories maintained on the registry.
     """
-    def __init__(
-        self, repositories=None
-    ):
+
+    def __init__(self, repositories=None):
         super().__init__()
         self.newAttr(
             name="Repositories", attType=[str], jsonName="repositories", required=True

@@ -8,18 +8,14 @@
 from opencontainers.struct import Struct
 from opencontainers.logger import bot
 
+
 class TagList(Struct):
     """TagList is a list of tags for a given repository.
     """
-    def __init__(
-        self, name, tags=None
-    ):
+
+    def __init__(self, name, tags=None):
         super().__init__()
-        self.newAttr(
-            name="Name", attType=str, jsonName="name", required=True
-        )
-        self.newAttr(
-            name="Name", attType=[str], jsonName="tags", required=True
-        )
+        self.newAttr(name="Name", attType=str, jsonName="name", required=True)
+        self.newAttr(name="Name", attType=[str], jsonName="tags", required=True)
         self.add("Name", name)
         self.add("Tags", tags or [])
