@@ -521,3 +521,11 @@ and from a string (note we are using the original asciitext)
 expected == alg.fromString(asciitext)
 True
 ```
+
+## Distribution Spec
+
+The [distribution-spec](https://github.com/opencontainers/distribution-spec) outlines endpoints and protocol 
+(e.g., POST, PUT, PATCH, headers) to interact with an Open Containers registry. Toward this aim, 
+the Python module here provides a client, a Python version of [Reggie](https://github.com/bloodorangeio/reggie) to make
+it easier to interact with distribution-spec registries.
+

@@ -127,8 +127,7 @@ index_with_custom = {
 
 
 def test_imageindex(tmp_path):
-    """test creation of an opencontainers Index
-    """
+    """test creation of an opencontainers Index"""
     index = Index()
 
     # expected failure: mediaType does not match pattern

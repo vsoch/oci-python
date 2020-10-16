@@ -22,8 +22,7 @@ import pytest
 
 
 def test_algorithms(tmp_path):
-    """test creation of an opencontainers Algorithm
-    """
+    """test creation of an opencontainers Algorithm"""
     # Generate random bytes
     asciitext = "".join([random.choice(string.ascii_letters) for n in range(20)])
     p = bytes(asciitext, "utf-8")

@@ -10,8 +10,7 @@ from opencontainers.logger import bot
 
 
 class RepositoryList(Struct):
-    """RepositoryList returns a catalog of repositories maintained on the registry.
-    """
+    """RepositoryList returns a catalog of repositories maintained on the registry."""
 
     def __init__(self, repositories=None):
         super().__init__()

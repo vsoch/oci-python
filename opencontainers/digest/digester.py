@@ -10,8 +10,8 @@ from hashlib import new
 
 class Digester(Struct):
     """Digester calculates the digest of written data. Writes should go directly
-       to the return value of Hash, while calling Digest will return the current
-       value of the digest.
+    to the return value of Hash, while calling Digest will return the current
+    value of the digest.
     """
 
     def __init__(self):
@@ -22,8 +22,7 @@ class Digester(Struct):
 
 
 class digester(Struct):
-    """digester provides a simple digester definition that embeds a hasher.
-    """
+    """digester provides a simple digester definition that embeds a hasher."""
 
     def __init__(self, alg=None, hashObj=None):
 

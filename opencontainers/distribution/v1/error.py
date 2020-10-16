@@ -13,8 +13,7 @@ ErrRegistry = "distribution: registry returned error"
 
 
 class ErrorInfo(Struct):
-    """ErrorInfo describes a server error returned from a registry.
-    """
+    """ErrorInfo describes a server error returned from a registry."""
 
     def __init__(self, code, message, detail):
         super().__init__()
@@ -28,8 +27,7 @@ class ErrorInfo(Struct):
 
 
 class ErrorResponse(Struct):
-    """ErrorResponse is returned by a registry on an invalid request.
-    """
+    """ErrorResponse is returned by a registry on an invalid request."""
 
     def __init__(self, errors=None):
         super().__init__()
@@ -39,19 +37,16 @@ class ErrorResponse(Struct):
         self.add("Errors", errors or [])
 
     def Error(self):
-        """Error implements the Error interface.
-        """
+        """Error implements the Error interface."""
         return ErrRegistry
 
     def Detail(self):
-        """Detail returns an ErrorInfo
-        """
+        """Detail returns an ErrorInfo"""
         return self.attrs.get("Errors").value
 
 
 class ErrRegistry(Struct):
-    """ErrorResponse is returned by a registry on an invalid request.
-    """
+    """ErrorResponse is returned by a registry on an invalid request."""
 
     def __init__(self, errors=None):
         super().__init__()

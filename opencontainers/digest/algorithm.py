@@ -20,8 +20,8 @@ import io
 
 class Algorithm(StrStruct):
     """Algorithm identifies and implementation of a digester by an identifier.
-       Note the that this defines both the hash algorithm used and the string
-       encoding.
+    Note the that this defines both the hash algorithm used and the string
+    encoding.
     """
 
     def __init__(self, value=None):
@@ -29,9 +29,9 @@ class Algorithm(StrStruct):
         super().__init__(value)
 
     def available(self):
-        """Available returns true if the digest type is available for use. 
-           If this returns false, Digester and Hash will return None.
-           we are flexible to allow the user to also provide a full digest
+        """Available returns true if the digest type is available for use.
+        If this returns false, Digester and Hash will return None.
+        we are flexible to allow the user to also provide a full digest
         """
         algorithm = self.value
 
@@ -46,24 +46,23 @@ class Algorithm(StrStruct):
 
     def digester(self):
         """Digester returns a new digester for the specified algorithm. If the algorithm
-           does not have a digester implementation, nil will be returned. This can be
-           checked by calling Available before calling Digester. Note that
-           the GoLang implementation also had a Hash() function that (seemed to)
-           return the same, and instead I'm going to return the same hashlib new.
+        does not have a digester implementation, nil will be returned. This can be
+        checked by calling Available before calling Digester. Note that
+        the GoLang implementation also had a Hash() function that (seemed to)
+        return the same, and instead I'm going to return the same hashlib new.
         """
         return digester(self, self.hash())
 
     def hash(self):
-        """Hash returns a new hash as used by the algorithm.
-        """
+        """Hash returns a new hash as used by the algorithm."""
         if not self.available():
             return None
         return hashlib.new(self._algorithm)
 
     def validate(self, encoded):
         """Validate validates the encoded portion string. This means
-           ensuring that the algorithm is available, checking it's length,
-           and the characters provided.
+        ensuring that the algorithm is available, checking it's length,
+        and the characters provided.
         """
         if not self.available():
             raise ErrDigestUnsupported()
@@ -80,8 +79,7 @@ class Algorithm(StrStruct):
         return True
 
     def size(self):
-        """Size returns number of bytes returned by the hash.
-        """
+        """Size returns number of bytes returned by the hash."""
         if not self.available():
             return 0
         hashy = hashlib.new(self._algorithm)
@@ -91,8 +89,8 @@ class Algorithm(StrStruct):
 
     def set(self, value):
         """Set implemented to allow use of Algorithm as a command line flag.
-           This isn't useful, as we could already call load (but this will
-           mirror GoLang.
+        This isn't useful, as we could already call load (but this will
+        mirror GoLang.
         """
         self = self.load(value)
         if not self.available():
@@ -100,7 +98,7 @@ class Algorithm(StrStruct):
 
     def encode(self, content):
         """Encode encodes the raw bytes of a digest, typically from a hash.Hash, into
-           the encoded portion of the digest.
+        the encoded portion of the digest.
         """
         # Currently, all algorithms use a hex encoding. When we
         # add support for back registration, we can modify this accordingly.
@@ -111,24 +109,23 @@ class Algorithm(StrStruct):
 
     def fromReader(self, ioReader):
         """FromReader returns the digest of the reader using the algorithm.
-           the input must be type bytes, usually from io.BytesIO.read(). 
-           This function likely isn't needed, but is provided to mirror
-           the GoLang implementation.
+        the input must be type bytes, usually from io.BytesIO.read().
+        This function likely isn't needed, but is provided to mirror
+        the GoLang implementation.
         """
         if not isinstance(ioReader, io.BytesIO):
             bot.exit("input must be io.BytesIO")
         return self.fromBytes(ioReader.read())
 
     def fromBytes(self, content):
-        """FromBytes digests the input and returns a Digest.
-        """
+        """FromBytes digests the input and returns a Digest."""
         digester = self.digester()
         digester.hash.update(content)
         return digester.digest()
 
     def fromString(self, content):
         """FromString digests the string input and returns a Digest.
-           TODO not sure what this is intended for.
+        TODO not sure what this is intended for.
         """
         if not isinstance(content, str):
             bot.exit("input must be string")

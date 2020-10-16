@@ -14,8 +14,8 @@ import re
 
 class Index(Struct):
     """Index references manifests for various platforms.
-       This structure provides `application/vnd.oci.image.index.v1+json` 
-       mediatype when marshalled to JSON.
+    This structure provides `application/vnd.oci.image.index.v1+json`
+    mediatype when marshalled to JSON.
     """
 
     def __init__(self, manifests=None, schemaVersion=None, annotations=None):
@@ -37,7 +37,7 @@ class Index(Struct):
 
     def _validate(self):
         """custom validation function to ensure that Manifests mediaTypes
-           are valid.
+        are valid.
         """
         valid_types = [MediaTypeImageManifest, MediaTypeImageIndex]
 

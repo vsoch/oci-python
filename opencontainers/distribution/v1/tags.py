@@ -10,8 +10,7 @@ from opencontainers.logger import bot
 
 
 class TagList(Struct):
-    """TagList is a list of tags for a given repository.
-    """
+    """TagList is a list of tags for a given repository."""
 
     def __init__(self, name, tags=None):
         super().__init__()
