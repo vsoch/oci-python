@@ -12,6 +12,10 @@ import re
 import requests
 from .defaults import DEFAULT_USER_AGENT, URL_REGEX, VALID_METHODS
 from .config import BaseConfig
+from requests.cookies import cookiejar_from_dict
+from requests.adapters import HTTPAdapter
+from requests.hooks import default_hooks
+from collections import OrderedDict
 
 
 class RequestConfig(BaseConfig):
@@ -28,16 +32,14 @@ class RequestConfig(BaseConfig):
     ]
 
     def __init__(self, opts):
-        """Instantiate a config."""
-        """Instantiate a request config
-        """
+        """Instantiate a request config"""
         self.Name = None
         self.Reference = None
         self.Digest = None
         self.SessionID = None
         self.RetryCallback = None
         self.required = [self.Name]
-        super().__init__(opts)
+        super().__init__(opts or [])
 
 
 def WithName(name):
@@ -95,10 +97,37 @@ class RequestClient(requests.Session):
     """
 
     def __init__(self):
-        """Start with an empty request ready to go."""
-        super().__init__()
+        """Start with an empty request ready to go. We replicate the parent
+        class but don't set headers as it is provided as a property.
+        """
+
+    def __init__(self):
+        self.auth = None
+        self.proxies = {}
+        self.hooks = default_hooks()
+        self.params = {}
+        self.stream = False
+        self.verify = True
+        self.cert = None
+        self.max_redirects = 30
+        self.trust_env = True
+        self.cookies = cookiejar_from_dict({})
+        self.adapters = OrderedDict()
+        self.mount("https://", HTTPAdapter())
+        self.mount("http://", HTTPAdapter())
         self.retryCallback = None
         self.NewRequest()
+
+    def __str__(self):
+        return "[%s] %s" % (self.Request.method, self.Request.url)
+
+    @property
+    def url(self):
+        return self.Request.url
+
+    @property
+    def headers(self):
+        return self.Request.headers
 
     def NewRequest(self):
         """Set a new Request object to replace original, still return client"""
@@ -109,6 +138,12 @@ class RequestClient(requests.Session):
         """SetMethod sets the method for the request"""
         assert method in VALID_METHODS
         self.Request.method = method
+        return self
+
+    def SetUrl(self, url):
+        """SetMethod sets the method for the request"""
+        assert re.search(URL_REGEX, url)
+        self.Request.url = url
         return self
 
     def SetBody(self, body):
@@ -144,7 +179,7 @@ class RequestClient(requests.Session):
         # prepare and send the request, add callback
         p = self.Request.prepare()
         response = self.send(p)
-        response.retryCallBack = self.retryCallBack
+        response.retryCallback = self.retryCallback
         return response
 
 

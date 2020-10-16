@@ -12,4 +12,9 @@ This include:
  - [opencontainers/distribution-spec](https://github.com/opencontainers/distribution-spec) maps to [opencontainers/distribution](opencontainers/distribution), which also includes a Python version of the [Reggie client](https://github.com/bloodorangeio/reggie) to interact with an OCI registry.
 
 
+## QUESTIONS
+
+- GetAbsoluteLocation can return nil/None,while Get RelativeLocation returns an empty string. Is this intentional? My thinking is that it would be logical for them to be consistent.
+- For response.Errors it seems to be important that Errors is defined *and* not empty. Is it okay if Errors is not defined? Wouldn't a response without errors not pass along this attribute? I'd like to return an empty list either way, and the only real check is if the json parses.
+
 See the documentation at [vsoch.github.io/oci-python](https://vsoch.github.io/oci-python).

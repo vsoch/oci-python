@@ -19,10 +19,13 @@ class BaseConfig:
     with BaseClient.validate().
     """
 
-    def __init__(self, opts):
-        """Instantiate a config."""
+    def __init__(self, opts=None):
+        """Instantiate a config. The subclass is required to call validate(), in case
+        additional parameters or manipulation needs to be done.
+        """
         # Opts must be a list of known functions
-        self.set_options(opts)
+        if opts:
+            self.set_options(opts)
 
         # List of valid function names, set by subclass
         self.valid_functions = getattr(self, "valid_functions", [])
@@ -30,16 +33,15 @@ class BaseConfig:
         # Required attributes
         self.required = getattr(self, "required", [])
 
-        # Validation options
-        self.validate()
-
     def set_options(self, opts):
         """Validate and set a list of options, looping through the list to set
         them for the config client. We also perform validation. Any issues
         with one of the functions raises an error.
         """
-        if not isinstance(opts, list):
-            raise ValueError("Options should be provided as a list of functions.")
+        if not isinstance(opts, (list, tuple)):
+            raise ValueError(
+                "Options should be provided as a list or tuple of functions."
+            )
 
         for func in opts:
             self.validate_function(func)

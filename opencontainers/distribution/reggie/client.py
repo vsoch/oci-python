@@ -29,9 +29,9 @@ class ClientConfig(BaseConfig):
         "WithAuthScope",
     ]
 
-    def __init__(self, opts):
-        """Instantiate a config."""
-        self.Address = None
+    def __init__(self, address, opts=None):
+        """Instantiate a config. An address is required."""
+        self.Address = address
         self.AuthScope = None
         self.Username = None
         self.Password = None
@@ -39,7 +39,7 @@ class ClientConfig(BaseConfig):
         self.DefaultName = None
         self.UserAgent = DEFAULT_USER_AGENT
         self.required = [self.Address, self.UserAgent]
-        super().__init__(opts)
+        super().__init__()
 
     def _validate(self):
         """Custom validation on top of BaseConfig validation."""
@@ -100,18 +100,19 @@ def WithUserAgent(userAgent):
 # Client
 
 
-class Client:
+class NewClient:
     """A Client is a handle to create and issue requests to an OCI distribution
     registry. It is based on the Go version of reggie by BloodOrange.io,
     https://github.com/bloodorangeio/reggie/blob/master/client.go
     """
 
-    def __init__(self, address, opts):
+    def __init__(self, address, *opts):
         """create a new client, requiring an address, and a Client Config.
         Matched to NewClient: builds a new Client from provided options.
         """
         self.Config = ClientConfig(address)
         self.Config.set_options(opts)
+        self.Config.validate()
         self.Client = RequestClient()
         self.Debug = self.Config.Debug
 
@@ -122,7 +123,7 @@ class Client:
         """SetDefaultName sets the default registry namespace to use for building a Request."""
         self.Config.DefaultName = namespace
 
-    def NewRequest(self, method, path, opts):
+    def NewRequest(self, method, path, *opts):
         """Prepare a request for some method, path (url) and set of options."""
         rc = RequestConfig(opts)
         requestClient = self.Client.NewRequest()
@@ -143,17 +144,10 @@ class Client:
                 path = path.replace(key, value, -1)
 
         # Remove trailing slash and prepare url
-        path = path.rstrip("/")
-        url = "%s/%s" % (client.Config.Address, path)
-        requestClient.setUrl(url)
+        path = path.strip("/")
+        url = "%s/%s" % (self.Config.Address, path)
+        requestClient.SetUrl(url)
         requestClient.SetHeader("User-Agent", self.Config.UserAgent)
-
-        # TODO need to check here if setting attributes on returned class sets for parent too
-        print("TODO check")
-        import IPython
-
-        IPython.embed()
-
         requestClient.SetRetryCallback(rc.RetryCallback)
 
         # Return the Client, which has Request and retryCallback
