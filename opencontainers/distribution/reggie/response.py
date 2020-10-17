@@ -14,7 +14,7 @@ from requests.models import Response
 def GetRelativeLocation(self):
     """GetRelativeLocation returns the path component of the URL contained"""
     loc = self.headers.get("Location", "")
-    if loc:
+    if loc and loc.startswith("http"):
         loc = "/%s" % "/".join(loc.split("/")[3:])
     return loc
 

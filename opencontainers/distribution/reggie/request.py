@@ -8,14 +8,16 @@ with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """
 
-import re
-import requests
 from .defaults import DEFAULT_USER_AGENT, URL_REGEX, VALID_METHODS
 from .config import BaseConfig
 from requests.cookies import cookiejar_from_dict
 from requests.adapters import HTTPAdapter
 from requests.hooks import default_hooks
 from collections import OrderedDict
+
+import base64
+import re
+import requests
 
 
 class RequestConfig(BaseConfig):
@@ -105,7 +107,6 @@ class RequestClient(requests.Session):
         self.auth = None
         self.proxies = {}
         self.hooks = default_hooks()
-        self.params = {}
         self.stream = False
         self.verify = True
         self.cert = None
@@ -116,7 +117,7 @@ class RequestClient(requests.Session):
         self.mount("https://", HTTPAdapter())
         self.mount("http://", HTTPAdapter())
         self.retryCallback = None
-        self.NewRequest()
+        self.Request = None
 
     def __str__(self):
         return "[%s] %s" % (self.Request.method, self.Request.url)
@@ -126,13 +127,34 @@ class RequestClient(requests.Session):
         return self.Request.url
 
     @property
+    def method(self):
+        return self.Request.method
+
+    @property
     def headers(self):
         return self.Request.headers
 
-    def NewRequest(self):
+    @property
+    def body(self):
+        return (
+            self.Request.data.decode("utf-8")
+            if self.Request.data and isinstance(self.Request.data, bytes)
+            else self.Request.data
+        )
+
+    @property
+    def params(self):
+        return self.Request.params
+
+    def clearParams(self):
+        self.Request.params = {}
+
+    @classmethod
+    def NewRequest(cls):
         """Set a new Request object to replace original, still return client"""
-        self.Request = requests.Request()
-        return self
+        newclient = RequestClient()
+        newclient.Request = requests.Request()
+        return newclient
 
     def SetMethod(self, method):
         """SetMethod sets the method for the request"""
@@ -165,6 +187,17 @@ class RequestClient(requests.Session):
         """Helper function to add retry callback as a hook"""
         self.hooks["response"].append(callback)
         self.retryCallback = callback
+        return self
+
+    def SetAuthToken(self, token):
+        """A wrapper to adding basic authentication to the Request"""
+        return self.SetHeader("Authorization", "Bearer %s" % token)
+
+    def SetBasicAuth(self, username, password):
+        """A wrapper to adding basic authentication to the Request"""
+        auth_str = "%s:%s" % (username, password)
+        auth_header = base64.b64encode(auth_str.encode("utf-8"))
+        return self.SetHeader("Authorization", "Basic %s" % auth_header.decode("utf-8"))
 
     def Execute(self, method=None, url=None):
         """Execute validates a Request and executes it. Optionally,

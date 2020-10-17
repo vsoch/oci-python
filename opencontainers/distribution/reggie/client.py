@@ -8,11 +8,14 @@ with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """
 
-import re
-import requests
 from .defaults import DEFAULT_USER_AGENT, URL_REGEX
 from .request import RequestConfig, RequestClient
 from .config import BaseConfig
+from copy import deepcopy
+
+import sys
+import re
+import requests
 
 
 class ClientConfig(BaseConfig):
@@ -144,7 +147,6 @@ class NewClient:
                 path = path.replace(key, value, -1)
 
         # Remove trailing slash and prepare url
-        path = path.strip("/")
         url = "%s/%s" % (self.Config.Address, path)
         requestClient.SetUrl(url)
         requestClient.SetHeader("User-Agent", self.Config.UserAgent)
@@ -157,15 +159,15 @@ class NewClient:
         """Given a request (an instance of the RequestClient, execute the request
         and return a response.
         """
-        # a requests.Repsponse with additional retryCallback
+        # a requests.Response with additional retryCallback
         response = req.Execute()
 
         # Unauthorized response
         if response.status_code == 401:
-            response = self.retryRequestWithAuth(req, resp)
+            response = self.retryRequestWithAuth(req, response)
         return response
 
-    def retryRequestWithAuth(originalRequest, originalResponse):
+    def retryRequestWithAuth(self, originalRequest, originalResponse):
         """Given a 401 response (Authentication needed) retrieve the WWW-Authenticate
         header and retry with authentication
         """
@@ -174,22 +176,21 @@ class NewClient:
             return originalResponse
 
         # Clear query parameters for original request
-        for key, _ in originalRequest.params.items():
-            del originalRequest.params[key]
+        originalRequest.clearParams()
 
         # If there is a callback, use it, should raise exception if issue
         if originalRequest.retryCallback:
             try:
                 originalRequest.retryCallback(originalRequest)
             except Exception as exc:
-                sys.exit("retry callback returned error: %s" % exc)
+                raise Exception("retry callback returned error: %s" % exc)
 
         authenticationType = re.match("(?i).*(bearer|basic).*", authHeaderRaw)
         if not authenticationType:
             sys.exit("www-Authenticate header is malformed.")
 
         # Given a bearer token, prepare request for it
-        if authenticationType.groups()[0] == "bearer":
+        if authenticationType.groups()[0].lower() == "bearer":
             h = parseAuthHeader(authHeaderRaw)
             req = (
                 self.Client.NewRequest()
@@ -200,13 +201,14 @@ class NewClient:
             )
 
             # Set the scope, first priority to config, then header
-            if self.Config.AuthScope != "":
+            if self.Config.AuthScope:
                 req.SetQueryParam("scope", self.Config.AuthScope)
-            elif h.Scope != "":
+            elif h.Scope:
                 req.SetQueryParam("scope", h.Scope)
 
-            # Request the token
             authResponse = req.Execute("GET", h.Realm)
+
+            # Request the token
             info = authResponse.json()
             token = info.get("token")
             if not token:
@@ -215,16 +217,16 @@ class NewClient:
             # Set the token to the original request and retry
             originalRequest.SetAuthToken(token)
 
-        elif authenticationType.groups()[0] == "basic":
+        elif authenticationType.groups()[0].lower() == "basic":
             originalRequest.SetBasicAuth(self.Config.Username, self.Config.Password)
 
-        return originalRequest.Execute(originalRequest.Method, originalRequest.URL)
+        return originalRequest.Execute(originalRequest.method, originalRequest.url)
 
 
 def parseAuthHeader(authHeaderRaw):
     """parse authentication header into pieces"""
     regex = re.compile('([a-zA-z]+)="(.+?)"')
-    matches = regex.find_all(authHeaderRaw)
+    matches = regex.findall(authHeaderRaw)
     lookup = dict()
     for match in matches:
         lookup[match[0]] = match[1]

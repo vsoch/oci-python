@@ -21,6 +21,462 @@ cd {{ site.github_repo }}
 python setup.py install
 ```
 
+## Distribution Specification
+
+While the distribution specification comes with basic classes that might be implemented
+by a registry (e.g., repository, tags, and errors):
+
+```bash
+$ ls opencontainers/distribution/v1/
+error.py  __init__.py  repository.py  tags.py
+```
+
+a more common use case is to interact with an existing registry. This is where
+we introduce Reggie.
+
+### Reggie
+
+If you are looking for a Python client to interact with an [opencontainers/distribution-spec](https://github.com/opencontainers/distribution-spec) registry, oci-python serves a client, Reggie (python) - "the saint of content management" that 
+mimics the official [Reggie client](https://github.com/bloodorangeio/reggie) to interact with an OCI registry.
+These sections will show you how to interact with Reggie. You can also look at the test file
+[test_distribution.py](https://github.com/vsoch/oci-python/blob/master/opencontainers/tests/test_distribution.py)
+that instantiates and uses the client to interact with a [mock server](https://github.com/vsoch/oci-python/blob/master/opencontainers/tests/mock_server.py). If you are looking to implement your own full server in Python,
+we direct you to [Django OCI](https://vsoch.github.io/django-oci/).
+
+#### Path Substitutions
+
+Reggie supports replacement templates in strings so that the requests look familiar
+to what you see defined for the [distrubution-spec](https://github.com/opencontainers/distribution-spec/blob/master/spec.md).
+The follow parameters in the table are supported. For some, you can see that they are supported
+by multiple functions.
+
+|URI Parameter |Description | Option | Method|
+|--------------|------------|--------|-------|
+|<name>|Namespace of a repository within a registry | WithDefaultName | (Client) or
+WithName (Request) |
+|<digest>|Content-addressable identifier| WithDigest|  (Request) |
+|<reference>|Tag or digest|WithReference| (Request)|
+|<session_id>|Session ID for upload |WithSessionID | (Request)|
+
+
+#### Method Chaining
+
+Reggie provides classes for a Client, Request, and a wrapper around a requests.Response.
+Under the hood, all of these classes are wrapping the [requests](https://requests.readthedocs.io/en/master/) library.
+For the Reggie classes, for example for a Client, several courtesy functions have been created to support
+method chaining - or (assuming that we have variables defined) the ability to do something like this:
+
+```python
+client = NewClient("http://127.0.0.1:8000")
+req = (client.NewRequest("PUT", location).
+         SetHeader("Content-Length", configContentLength).
+         SetHeader("Content-Type", "application/octet-stream").
+         SetQueryParam("digest", configDigest).
+         SetBody(configContent))
+```
+
+For a RequestClient (which is returned by client.NewRequest()) the following 
+functions are available for further chaining to customize the request:
+
+ - SetHeader
+ - SetMethod
+ - SetUrl
+ - SetRetryCallback
+ - SetQueryParam
+ - SetBody
+ - SetAuthToken
+ - SetBasicAuth
+
+#### Client Options
+
+When you create a new client, you can provide one or more functions as options. For
+example, let's say I want to make a client that has a username and password ready to go,
+and in debug mode. I might do:
+
+```python
+client = NewClient("http://127.0.0.1:8000",
+    WithUsernamePassword("myuser", "mypass"),
+    WithDefaultName("myorg/myrepo"),
+    WithDebug(True))
+```
+
+Notice that there is a comma after the address (the first argument) and each following
+argument is a function with some number of inputs. This works because each of the functions 
+makes changes to the client instance, and returns "self" or a reference to the class.
+In tehe above, the last `WithDebug` function returns the client to the variable `client`.
+For the base Client, the following functions are available for chaining.
+
+  - WithUsernamePassword
+  - WithAuthScope
+  - WithDefaultName
+  - WithDebug
+  - WithUserAgent
+
+with the exception of NewClient" which returns a new instance of the class. This is done
+to ensure that any previously created request objects aren't replaced. For the RequestClient,
+the following functions are available for chaining:
+
+  - WithName
+  - WithReference
+  - WithDigest
+  - WithSessionID
+  - WithRetryCallback
+
+
+#### Location Header Parsing
+
+For certain types of requests, such as chunked uploads, the Location header is needed in order to make follow-up requests.
+Reggie provides two helper methods to obtain the redirect location. Let's say we have
+a request (req) and we hand it to a client to execute:
+
+```python
+response = client.Do(req)
+```
+
+We can then get the relative or absolute url as follows. Remember that relative doesn't
+include the http/https:// part, and absolute does.
+
+```python
+print("Relative location: %s" % response.GetRelativeLocation()) # /v2/...
+print("Absolute location: %s" % response.GetAbsoluteLocation()) # https://...
+```
+
+#### Error Parsing
+
+When you get a response back, you can call the Errors() method that will
+attempt to parse the response body into a list of OCI ErrorInfo objects.
+
+```python
+for error in response.Errors():
+    print(error['code'])
+    print(error['message'])
+    print(error['detail'])
+```
+
+#### HTTP Valid Methods
+
+The following metohds can be handed to a Reggie Python client to issue a request.
+
+```
+GET
+PUT
+PATCH
+DELETE
+POST
+HEAD
+OPTIONS
+```
+
+#### Custom User-Agent
+
+By default, requests made by Reggie will use a default value for the User-Agent header in order for registry providers to identify incoming requests.
+
+```
+client.Config.UserAgent
+# 'reggie-python/0.0.11 (https://github.com/vsoch/oci-python)'
+```
+The version here corresponds to the version of oci-python.
+
+However you can customize this with the client option `WithUserAgent`. Here is an example:
+
+```python
+client = NewClient("http://localhost:8000",
+    WithUserAgent("my-agent"))
+
+client.Config.UserAgent
+# 'my-agent'
+```
+
+Next, let's walk through some examples of interacting with a server.
+
+
+#### 1. Start a server
+
+If you have a registry in mind, great, but if you need to start a development
+server we can suggest [django-oci](https://github.com/vsoch/django-oci).
+Note that at the time of this writing, django-oci does not have authentication
+implemented yet, so push/pull endpoints will work without it.
+Here is a quick set of steps to get a server running.
+
+```bash
+git clone https://github.com/vsoch/django-oci
+cd django-oci
+
+# Install dependencies
+python -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+pip install opencontainers
+
+# Database migrations
+python manage.py makemigrations
+python manage.py makemigrations django_oci
+python manage.py migrate
+python manage.py runserver
+```
+```
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+October 17, 2020 - 21:53:15
+Django version 3.1.2, using settings 'tests.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+```
+
+This should get a development server running! Now you can open another Python
+interactive terminal (I like ipython) and test the opencontainers reggie client.
+
+```python
+from opencontainers.distribution.reggie import *
+client = NewClient("http://127.0.0.1:8000")
+```
+
+You can also instantiate the client with a number of options such as authentication,
+namespace, and debug mode.
+
+```python
+client = NewClient("http://127.0.0.1:8000",
+    WithUsernamePassword("myuser", "mypass"),
+    WithDefaultName("myorg/myrepo"),
+    WithDebug(True))
+```
+```
+client.Config.DefaultName
+# 'myorg/myrepo'
+
+client.Config.Debug
+# True
+```
+
+#### 2. Make Requests
+
+Let's walk through a few basic requests to demonstrate how Reggie Python works, albeit with an empty registry.
+
+##### Upload a blob
+
+Let's walk through creating and uploading a blob to our registry.
+First, create the client. This assumes django-oci does not have authentication.
+
+```python
+client = NewClient("http://localhost:8000",
+           WithDefaultName("myorg/myrepo"),
+	   WithDebug(True)
+)
+
+```
+
+And then create the request.
+
+```python
+# Request an upload session URL
+req = client.NewRequest("POST", "/v2/<name>/blobs/uploads/")
+
+req.url
+# 'http://localhost:8000/v2/myorg/myrepo/blobs/uploads'
+
+req.method
+# 'POST'
+```
+
+And do the request. You should get back a 202 response with a "Location" header.
+
+```python
+response = client.Do(req)
+```
+
+```
+response
+# <Response [202]>
+
+response.headers['Location']
+# '/v2/put/1/session-942e656f-d08f-4df9-a9e4-575eb59aae77/blobs/upload/'
+```
+
+You actually don't need to worry about knowing this header, because it will be provided
+to the Reggie client with the GetRelativeLocation() function provided with the response object.
+Next, let's prepare a blob for an empty manifest config, separated into two chunks "{" and "}."
+
+```bash
+blob = "{}"
+blobChunk1 = blob[0]
+blobChunk2 = blob[1]
+```
+
+We also need to provide a range, and calculate a sha256 digest!
+
+```bash
+blobChunk1Range = "0-%s" % (len(blobChunk1)-1)
+blobChunk2Range = "%s-%s" % (len(blobChunk1), len(blob)-1)
+```
+
+Here is a function for the digest
+
+```
+import hashlib
+def calculate_digest(content)
+    hasher = hashlib.sha256()
+    if not isinstance(content, bytes):
+        content = content.encode('utf-8')
+    hasher.update(content)
+    return "sha256:%s" % hasher.hexdigest()
+```
+```
+blobDigest = calculate_digest(blob)
+```
+
+Next, let's upload the first chunk.
+
+```python
+req = (client.NewRequest("PATCH", response.GetRelativeLocation()).
+        SetHeader("Content-Type", "application/octet-stream").
+        SetHeader("Content-Length", str(len(blobChunk1))).
+        SetHeader("Content-Range", blobChunk1Range).
+        SetBody(blobChunk1)
+      )
+blobResponse = client.Do(req)
+```
+
+And upload the final chunk!
+```python
+req = (client.NewRequest("PATCH", response.GetRelativeLocation()).
+        SetHeader("Content-Type", "application/octet-stream").
+        SetHeader("Content-Length", str(len(blobChunk2))).
+        SetHeader("Content-Range", blobChunk2Range).
+        SetBody(blobChunk2)
+      )
+blobResponse = client.Do(req)
+```
+
+Finally, valiate the uploaded blob content.
+
+```python
+req = client.NewRequest("GET", "/v2/<name>/blobs/<digest>",
+        WithDigest(blobDigest))
+response = client.Do(req)
+```
+##### Upload a Manifest
+
+Let's create a tag!
+
+TODO: we should create image Manifest with OCI python
+
+
+
+
+##### List Tags
+
+For example, to list all tags for the repo vsoch/django-oci, you might do the following:
+
+```python
+req = client.NewRequest("GET", "/v2/<name>/tags/list",
+    WithName("vsoch/django-oci"))
+
+req.url
+# 'http://127.0.0.1:8000/v2/vsoch/django-oci/tags/list'
+
+req.method
+# 'GET'
+```
+
+Above, notice that although we've provided a url with `<name>`, the variable is substituted
+and we get the full url with `vsoch/django-oci`. Then when we execute the request, we get
+a response object.
+
+
+```python
+response = client.Do(req)
+```
+
+Since we didn't actually have that repository, we get a 404 (not found).
+
+```python
+response.status_code
+404
+```
+
+If we had created the repository and tags, we would parse the response json instead:
+
+```python
+tags = response.json()
+```
+
+##### Auth
+
+As you would expect, Reggie will first try issuing requests without special authentication.
+It's up to the registry to return a status code 401 "Authentication is needed" to ask Reggie
+to construct a request to authenticate. If you've provided a username and password with `WithUserNamePassword`
+then the request can be retried with this added Authorization header. This might look like:
+
+```bash
+client = NewClient("http://127.0.0.1:8000",
+    WithUsernamePassword("myuser", "mypass"))
+```
+```
+client.Config.Username
+# 'myuser'
+
+client.Config.Password
+#'mypass'
+```
+
+In order for this to work, alongside the 401 response the registry should return a 
+Www-Authenticate header that describes how to to authenticate. An example might
+include a realm, scope, and service.
+
+```
+'realm="https://pizza.com/v2/auth",service="testservice",scope="pull,push"'
+```
+
+For more info about the Www-Authenticate header and general HTTP auth topics, please see IETF RFCs [7235](https://tools.ietf.org/html/rfc7235) and [6749](https://tools.ietf.org/html/rfc6749).
+
+**Basic Auth**
+
+If the Www-Authenticate header contains the string "Basic," then the header used in the retried request will be formatted as 
+follows:
+
+```
+Authorization: Basic <credentials>
+```
+
+where credentials is the base64 encoding of the username and password joined by a single colon. E.g.,
+
+```
+credentials = myuser:mypass + base64 encoding
+```
+
+**"Docker-style" Token Auth**
+
+The more common method used by most commerial registries is "Docker style" token authentication.
+If the Www-Authenticate header contains "Bearer" instead, an attempt is made to retrieve
+a token from an authorization service. The details of the service are passed to Reggie in the
+same header. This authorization endpoint, if the request is valid, will return a token
+that is then added to the retried request as follows:
+
+```
+Authorization: Bearer <token>
+```
+
+**Custom Auth Scope**
+
+If you need to override the scope obtained from the Www-Authenticate header, then you can
+set the scope that you need when you instantiate the client:
+
+```python
+client = NewClient("http://localhost:8000",
+   WithAuthScope("repository:mystuff/myrepo:pull,push"))
+```
+```
+client.Config.AuthScope
+'repository:mystuff/myrepo:pull,push'
+```
+
+If you find that you want to better develop or improve the current (not used)
+Distribution-spec models, please [let us know]({{ site.repo}}/issues).
+
+
+
 ## Image Specification
 
 ### Image

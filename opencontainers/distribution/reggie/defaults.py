@@ -16,4 +16,4 @@ DEFAULT_USER_AGENT = "reggie-python/%s (https://github.com/vsoch/oci-python)" % 
 URL_REGEX = (
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
 )
-VALID_METHODS = ["GET", "POST", "PATCH", "DELETE"]
+VALID_METHODS = ["HEAD", "GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"]
