@@ -18,8 +18,7 @@ class hashVerifier(Struct):
         self.digest = digest
 
     def write(self, content):
-        """add bytes of content to the hash object
-        """
+        """add bytes of content to the hash object"""
         if not isinstance(content, bytes):
             content = bytes(content, "utf-8")
         self.hash.update(content)
@@ -27,8 +26,7 @@ class hashVerifier(Struct):
         self.digest.validate()
 
     def verified(self):
-        """calculate the hex digest against the digest
-        """
+        """calculate the hex digest against the digest"""
         return self.digest == NewDigest(self.digest.algorithm, self.hash)
 
 

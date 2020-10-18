@@ -15,8 +15,7 @@ import pytest
 
 
 def test_digest_verifier(tmp_path):
-    """test creation of an opencontainers verifiers
-    """
+    """test creation of an opencontainers verifiers"""
     asciitext = "".join([random.choice(string.ascii_letters) for n in range(20)])
     p = bytes(asciitext, "utf-8")
     digest = FromBytes(p)
@@ -27,7 +26,7 @@ def test_digest_verifier(tmp_path):
 
 def test_digest_verifier_unsupported(tmp_path):
     """TestVerifierUnsupportedDigest ensures that unsupported digest validation is
-       flowing through verifier creation.
+    flowing through verifier creation.
     """
     # expected failure: empty digest
     digest = Digest("")

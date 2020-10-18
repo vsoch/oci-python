@@ -6,10 +6,22 @@
       children:
         - title: Install
           url: "docs/getting-started#getting-started"
-        - title: Image Specification
-          url: "docs/getting-started#image-specification"
+    - title: "Distribution Specification"
+      url: "docs/getting-started#distribution-specification"
+      children:
+        - title: Reggie Client
+          url: "docs/getting-started#reggie"
+    - title: "Image Specification"
+      url: "docs/getting-started#image-specification"
+      children:
+        - title: Manifests
+          url: "docs/getting-started#image-manifest"
+        - title: Descriptor
+          url: "docs/getting-started#descriptor"
         - title: Digests
           url: "docs/getting-started#digest"
+        - title: Algorithms
+          url: "docs/getting-started#algorithms"
     - title: "About"
       url: "about"
     - title: "News"

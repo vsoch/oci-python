@@ -6,24 +6,21 @@
 
 
 class ErrDigestInvalidFormat(Exception):
-    """ErrDigestInvalidFormat returned when digest format invalid.
-    """
+    """ErrDigestInvalidFormat returned when digest format invalid."""
 
     def __init__(self):
         super().__init__("invalid checksum digest format")
 
 
 class ErrDigestInvalidLength(Exception):
-    """ErrDigestInvalidLength returned when digest has invalid length.
-    """
+    """ErrDigestInvalidLength returned when digest has invalid length."""
 
     def __init__(self):
         super().__init__("invalid checksum digest length")
 
 
 class ErrDigestUnsupported(Exception):
-    """returned when the digest algorithm is unsupported.
-    """
+    """returned when the digest algorithm is unsupported."""
 
     def __init__(self):
         super().__init__("unsupported digest algorithm")

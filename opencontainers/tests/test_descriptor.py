@@ -162,8 +162,7 @@ digest_unknown = {
 
 
 def test_descriptor(tmp_path):
-    """test creation of opencontiners Descriptor
-    """
+    """test creation of opencontiners Descriptor"""
     desc = Descriptor()
 
     # expected pass: valid descriptor

@@ -12,7 +12,7 @@ from datetime import datetime
 
 class ImageConfig(Struct):
     """ImageConfig defines the execution parameters which should be used as a
-       base when running a container using an image.
+    base when running a container using an image.
     """
 
     def __init__(
@@ -71,8 +71,7 @@ class ImageConfig(Struct):
 
 
 class RootFS(Struct):
-    """ RootFS describes a layer content addresses
-    """
+    """RootFS describes a layer content addresses"""
 
     def __init__(self, rootfs_type=None, diff_ids=None):
         super().__init__()
@@ -90,8 +89,7 @@ class RootFS(Struct):
 
 
 class History(Struct):
-    """History describes the history of a layer.
-    """
+    """History describes the history of a layer."""
 
     def __init__(
         self, created=None, created_by=None, author=None, comment=None, empty_layer=None
@@ -122,9 +120,9 @@ class History(Struct):
 
 
 class Image(Struct):
-    """Image is the JSON structure which describes some basic information about 
-       the image. This provides the `application/vnd.oci.image.config.v1+json` 
-       mediatype when marshalled to JSON.
+    """Image is the JSON structure which describes some basic information about
+    the image. This provides the `application/vnd.oci.image.config.v1+json`
+    mediatype when marshalled to JSON.
     """
 
     def __init__(

@@ -92,8 +92,7 @@ digest_unsupported = {
 
 
 def test_digests(tmp_path):
-    """test creation of an opencontainers Digest
-    """
+    """test creation of an opencontainers Digest"""
     with pytest.raises(digest_unsupported["err"]):
         d = Parse(digest_unsupported["input"])
 

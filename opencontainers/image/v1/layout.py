@@ -14,8 +14,8 @@ ImageLayoutVersion = "1.0.0"
 
 
 class ImageLayout(Struct):
-    """ImageLayout is the structure in the "oci-layout" file, found in the root 
-       of an OCI Image-layout directory.
+    """ImageLayout is the structure in the "oci-layout" file, found in the root
+    of an OCI Image-layout directory.
     """
 
     def __init__(self, version=None):

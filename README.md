@@ -9,5 +9,6 @@ This include:
 
  - [opencontainers/image-spec](https://github.com/opencontainers/image-spec/tree/master/specs-go) maps to [opencontainers/image](opencontainers/image)
  - [opencontainers/go-digest](https://github.com/opencontainers/go-digest) maps to [opencontainers/digest](opencontainers/digest)
+ - [opencontainers/distribution-spec](https://github.com/opencontainers/distribution-spec) maps to [opencontainers/distribution](opencontainers/distribution), which also includes a Python version of the [Reggie client](https://github.com/bloodorangeio/reggie) to interact with an OCI registry.
 
 See the documentation at [vsoch.github.io/oci-python](https://vsoch.github.io/oci-python).

@@ -10,8 +10,8 @@ from opencontainers.digest import Digest
 
 class Descriptor(Struct):
     """Descriptor describes the disposition of targeted content.
-       This structure provides `application/vnd.oci.descriptor.v1+json`
-       mediatype when marshalled to JSON.
+    This structure provides `application/vnd.oci.descriptor.v1+json`
+    mediatype when marshalled to JSON.
     """
 
     def __init__(
@@ -61,8 +61,7 @@ class Descriptor(Struct):
 
 
 class Platform(Struct):
-    """Platform describes the platform which the image in the manifest runs on.
-    """
+    """Platform describes the platform which the image in the manifest runs on."""
 
     def __init__(
         self,

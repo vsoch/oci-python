@@ -1,5 +1,6 @@
 include README.md LICENSE
 recursive-include opencontainers *
+graft opencontainers
 prune .env
 prune doc*
 prune .doc*

@@ -20,8 +20,8 @@ from .mediatype import (
 
 
 class Manifest(Struct):
-    """Manifest provides `application/vnd.oci.image.manifest.v1+json` 
-       mediatype structure when marshalled to JSON.
+    """Manifest provides `application/vnd.oci.image.manifest.v1+json`
+    mediatype structure when marshalled to JSON.
     """
 
     def __init__(
@@ -52,16 +52,15 @@ class Manifest(Struct):
 
     def _validate(self):
         """custom validation function to ensure that Config and Layers mediaTypes
-           are valid. By the time we get here, we know there is a Config object,
-           and there can be one or more layers.
+        are valid. By the time we get here, we know there is a Config object,
+        and there can be one or more layers.
         """
         if not self._validateLayerMediaTypes() or not self._validateConfigMediaType():
             return False
         return True
 
     def _validateConfigMediaType(self):
-        """validate the config media type.
-        """
+        """validate the config media type."""
         # The media type of the config must be for the config
         manifestConfig = self.attrs.get("Config").value
 
@@ -82,8 +81,7 @@ class Manifest(Struct):
         return True
 
     def _validateLayerMediaTypes(self):
-        """validate the Layer Media Types
-        """
+        """validate the Layer Media Types"""
         # These are valid mediaTypes for layers
         layerMediaTypes = [
             MediaTypeImageLayer,
@@ -96,7 +94,7 @@ class Manifest(Struct):
 
         # No layers, not valid
         layers = self.attrs.get("Layers").value
-        if not layers:
+        if layers == None:
             return False
 
         # Check against valid mediaType Layers

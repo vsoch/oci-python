@@ -13,18 +13,18 @@ import re
 
 class StructAttr(object):
     """A struct attribute holds a name, jsonName, value, attribute type,
-       and if it's required or not. The name should hold the parameter name
-       as reflected in the original (usually GoLang) implementation, while
-       the jsonName is how it should be serialized to json.
+    and if it's required or not. The name should hold the parameter name
+    as reflected in the original (usually GoLang) implementation, while
+    the jsonName is how it should be serialized to json.
 
-       Parameters
-       ==========
-       name: the name (key) for the attribute
-       attType: the attribute type (a python type), can be provided in list
-       required: boolean if required or not
-       jsonName: the name to serialize to json (not required, will use name)
-       value: optionally, provide a value on init
-       omitempty: if true, don't serialize with response.       
+    Parameters
+    ==========
+    name: the name (key) for the attribute
+    attType: the attribute type (a python type), can be provided in list
+    required: boolean if required or not
+    jsonName: the name to serialize to json (not required, will use name)
+    value: optionally, provide a value on init
+    omitempty: if true, don't serialize with response.
     """
 
     def __init__(
@@ -54,8 +54,7 @@ class StructAttr(object):
         return self.__str__()
 
     def _is_struct(self, attType=None):
-        """determine if an attType is another struct we need to populate
-        """
+        """determine if an attType is another struct we need to populate"""
         # We can provide a nested attType to check
         if not attType:
             attType = self.attType
@@ -69,8 +68,7 @@ class StructAttr(object):
             return False
 
     def set(self, value):
-        """set a new value, and validate the type. Return true if set
-        """
+        """set a new value, and validate the type. Return true if set"""
         # First pass, it might be another object to add
         if self._is_struct():
             newStruct = self.attType()
@@ -105,7 +103,7 @@ class StructAttr(object):
 
     def to_dict(self):
         """return a dictionary representation of the attribute. This won't
-           be called unless the attribute in question is a struct.
+        be called unless the attribute in question is a struct.
         """
         if isinstance(self.value, (str, int)):
             return self.value
@@ -125,7 +123,7 @@ class StructAttr(object):
 
     def validate_datetime(self, value):
         """validate a datetime string, but be generous to only check day,
-           month, year. This is a road nobody wants to go down.
+        month, year. This is a road nobody wants to go down.
         """
         value = value.split("T")[0]
         try:  # "2015-10-31T22:22:56.015925234Z"
@@ -136,7 +134,7 @@ class StructAttr(object):
 
     def validate_regexp(self, value):
         """validate a string or nested string values against a regular
-           expression. Return True if valid or not applicable, False otherwise
+        expression. Return True if valid or not applicable, False otherwise
         """
         if not self.regexp:
             return True
@@ -154,7 +152,7 @@ class StructAttr(object):
 
     def validate_type(self, value):
         """ensure that an attribute is of the correct type. If we are given
-           a list as type, then the value within it is the type we are checking.
+        a list as type, then the value within it is the type we are checking.
         """
         # If it's a list with something inside
         if isinstance(self.attType, list):
@@ -182,10 +180,10 @@ class StructAttr(object):
 
 
 class Struct(object):
-    """a Struct is a general base class that allows for printing 
-       and validating a set of attributes according to their defined subclass.
-       the subclass should have an init function that uses the functions
-       here to add required attributes.
+    """a Struct is a general base class that allows for printing
+    and validating a set of attributes according to their defined subclass.
+    the subclass should have an init function that uses the functions
+    here to add required attributes.
     """
 
     def __init__(self):
@@ -202,17 +200,17 @@ class Struct(object):
         hide=False,
     ):
         """add a new attribute, including a name, json key to dump,
-           type, and if required. We don't need a value here. You can
-           also update a current attribute here.
+        type, and if required. We don't need a value here. You can
+        also update a current attribute here.
 
-           Parameters
-           ==========
-           name: the name (key) for the attribute
-           attType: the attribute type (a python type), can be provided in list
-           required: boolean if required or not
-           jsonName: the name to serialize to json (not required, will use name)
-           omitempty: if true, don't serialize with response.
-           regexp: if a string is provided as the type (or nested), check against
+        Parameters
+        ==========
+        name: the name (key) for the attribute
+        attType: the attribute type (a python type), can be provided in list
+        required: boolean if required or not
+        jsonName: the name to serialize to json (not required, will use name)
+        omitempty: if true, don't serialize with response.
+        regexp: if a string is provided as the type (or nested), check against
         """
         self.attrs[name] = StructAttr(
             name=name,
@@ -226,14 +224,13 @@ class Struct(object):
 
     def _clear_values(self):
         """if a load is done, we remove previously loaded values for any
-           attributes
+        attributes
         """
         for name, att in self.attrs.items():
             self.attrs[name].value = None
 
     def to_dict(self):
-        """return a Struct as a dictionary, must be valid
-        """
+        """return a Struct as a dictionary, must be valid"""
         # A lookup of "empty" values based on types (mirrors Go)
         lookup = {str: "", int: None, list: [], dict: {}}
 
@@ -260,16 +257,14 @@ class Struct(object):
             return result
 
     def to_json(self):
-        """get the dictionary of a struct and return pretty printed json
-        """
+        """get the dictionary of a struct and return pretty printed json"""
         result = self.to_dict()
         if result:
             result = json.dumps(result, indent=4)
         return result
 
     def add(self, name, value):
-        """add a value to an existing attribute, normally when used by a client
-        """
+        """add a value to an existing attribute, normally when used by a client"""
         if name not in self.attrs:
             bot.exit("%s is not a valid attribute." % name)
 
@@ -282,7 +277,7 @@ class Struct(object):
 
     def load(self, content, validate=True):
         """given a dictionary load into its respective object
-           if validate is True, we require it to be completely valid.
+        if validate is True, we require it to be completely valid.
         """
         # import code
         # code.interact(local=locals())
@@ -315,7 +310,7 @@ class Struct(object):
 
     def generate_json_lookup(self):
         """based on the attributes, generate a jsonName lookup object.
-           keys are jsonNames we find in the wild, names are attribute names.
+        keys are jsonNames we find in the wild, names are attribute names.
         """
         lookup = dict()
         for name, att in self.attrs.items():
@@ -324,9 +319,9 @@ class Struct(object):
 
     def validate(self):
         """validate goes through each attribute, and ensure that it is of the
-           correct type, and if required it is defined. This is already done
-           to some extent when load is called, but this function serves as
-           a final validation (after an initial config is loaded).
+        correct type, and if required it is defined. This is already done
+        to some extent when load is called, but this function serves as
+        a final validation (after an initial config is loaded).
         """
         for name, att in self.attrs.items():
 
@@ -353,7 +348,7 @@ class Struct(object):
 
 class StrStruct(Struct, str):
     """a string Struct provides (generally) the same functions, but isn't
-       tied to attributes but rather a single string value.
+    tied to attributes but rather a single string value.
     """
 
     def __init__(self, value, **kwargs):
@@ -370,7 +365,7 @@ class StrStruct(Struct, str):
 
 class IntStruct(Struct, int):
     """a string Struct provides (generally) the same functions, but isn't
-       tied to attributes but rather a single string value.
+    tied to attributes but rather a single string value.
     """
 
     def __init__(self, value, **kwargs):
