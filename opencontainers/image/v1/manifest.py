@@ -94,7 +94,7 @@ class Manifest(Struct):
 
         # No layers, not valid
         layers = self.attrs.get("Layers").value
-        if not layers:
+        if layers == None:
             return False
 
         # Check against valid mediaType Layers

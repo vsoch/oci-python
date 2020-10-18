@@ -16,6 +16,7 @@ from requests.hooks import default_hooks
 from collections import OrderedDict
 
 import base64
+import json
 import re
 import requests
 
@@ -170,6 +171,10 @@ class RequestClient(requests.Session):
 
     def SetBody(self, body):
         """SetBody wraps the resty SetBody and returns the request, allowing method chaining"""
+        if isinstance(body, dict):
+            body = json.dumps(body)
+        if isinstance(body, str):
+            body = body.encode("utf-8")
         self.Request.data = body
         return self
 

@@ -21,6 +21,8 @@ cd {{ site.github_repo }}
 python setup.py install
 ```
 
+Note that this library (and thus documentation) is still under development.
+
 ## Distribution Specification
 
 While the distribution specification comes with basic classes that might be implemented
@@ -52,11 +54,11 @@ by multiple functions.
 
 |URI Parameter |Description | Option | Method|
 |--------------|------------|--------|-------|
-|<name>|Namespace of a repository within a registry | WithDefaultName | (Client) or
-WithName (Request) |
-|<digest>|Content-addressable identifier| WithDigest|  (Request) |
-|<reference>|Tag or digest|WithReference| (Request)|
-|<session_id>|Session ID for upload |WithSessionID | (Request)|
+|`<name>`|Namespace of a repository within a registry | WithDefaultName | (Client)| 
+|`<name>`|Namespace of a repository within a registry | WithName | (Request)| 
+|`<digest>`|Content-addressable identifier| WithDigest|  (Request) |
+|`<reference>`|Tag or digest|WithReference| (Request)|
+|`<session_id>`|Session ID for upload |WithSessionID | (Request)|
 
 
 #### Method Chaining
@@ -264,7 +266,6 @@ client = NewClient("http://localhost:8000",
            WithDefaultName("myorg/myrepo"),
 	   WithDebug(True)
 )
-
 ```
 
 And then create the request.
@@ -307,11 +308,11 @@ blobChunk2 = blob[1]
 We also need to provide a range, and calculate a sha256 digest!
 
 ```bash
-blobChunk1Range = "0-%s" % (len(blobChunk1)-1)
-blobChunk2Range = "%s-%s" % (len(blobChunk1), len(blob)-1)
+blobChunk1Range = "0-1"
+blobChunk2Range = "1-2"
 ```
 
-Here is a function for the digest
+Here is a function for the digest calculation:
 
 ```
 import hashlib
@@ -356,13 +357,65 @@ req = client.NewRequest("GET", "/v2/<name>/blobs/<digest>",
         WithDigest(blobDigest))
 response = client.Do(req)
 ```
+
 ##### Upload a Manifest
 
-Let's create a tag!
+Let's create a manifest! We will use our previous blob as the config blob.
 
-TODO: we should create image Manifest with OCI python
+```python
+manifest = {
+  "schemaVersion": 2,
+  "config": {
+    "mediaType": "application/vnd.oci.image.config.v1+json",
+    "size": len(blob),
+    "digest": blobDigest
+  },
+  "layers": []
+}
+```
 
+We can validate the manifest.
 
+```python
+from opencontainers.image.v1 import Manifest
+m = Manifest
+m.load(manifest)
+```
+
+Now prepare and issue the request to upload the manifest. Notice that we are adding a tag
+reference "latest":
+
+```python
+req = (client.NewRequest("PUT", "/v2/<name>/manifests/<reference>",
+     WithReference("latest")).
+     SetHeader("Content-Type", "application/vnd.oci.image.manifest.v1+json").
+     SetBody(manifest))
+response = client.Do(req)
+```
+
+We should see a 201 response!
+
+```python
+response.status_code
+201
+```
+
+Now we can validate the uploaded content.
+
+```python
+req = (client.NewRequest("GET", "/v2/<name>/manifests/<reference>",
+        WithReference("latest")).
+        SetHeader("Accept", "application/vnd.oci.image.manifest.v1+json"))
+response = client.Do(req)
+```
+```python
+response.json()
+{'schemaVersion': 2,
+ 'config': {'mediaType': 'application/vnd.oci.image.config.v1+json',
+  'size': 2,
+  'digest': 'sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a'},
+ 'layers': []}
+```
 
 
 ##### List Tags

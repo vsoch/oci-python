@@ -147,6 +147,7 @@ class NewClient:
                 path = path.replace(key, value, -1)
 
         # Remove trailing slash and prepare url
+        print(path)
         url = "%s/%s" % (self.Config.Address, path)
         requestClient.SetUrl(url)
         requestClient.SetHeader("User-Agent", self.Config.UserAgent)
