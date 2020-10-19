@@ -374,15 +374,8 @@ manifest = {
 }
 ```
 
-We can validate the manifest.
-
-```python
-from opencontainers.image.v1 import Manifest
-m = Manifest
-m.load(manifest)
-```
-
-Now prepare and issue the request to upload the manifest. Notice that we are adding a tag
+The manifest isn't "technically valid" because it has no layers, but it will still work
+to push to the registry. Now prepare and issue the request to upload the manifest. Notice that we are adding a tag
 reference "latest":
 
 ```python
@@ -442,17 +435,13 @@ a response object.
 response = client.Do(req)
 ```
 
-Since we didn't actually have that repository, we get a 404 (not found).
-
-```python
-response.status_code
-404
+We get the tags!
 ```
+response
+# <Response [200]>
 
-If we had created the repository and tags, we would parse the response json instead:
-
-```python
-tags = response.json()
+response.json()
+# {'name': 'myorg/myrepo', 'tags': ['latest']}
 ```
 
 ##### Auth
