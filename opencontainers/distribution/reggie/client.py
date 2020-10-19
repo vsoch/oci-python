@@ -16,6 +16,7 @@ from copy import deepcopy
 import sys
 import re
 import requests
+import urllib.parse
 
 
 class ClientConfig(BaseConfig):
@@ -147,8 +148,7 @@ class NewClient:
                 path = path.replace(key, value, -1)
 
         # Remove trailing slash and prepare url
-        print(path)
-        url = "%s/%s" % (self.Config.Address, path)
+        url = urllib.parse.urljoin(self.Config.Address, path)
         requestClient.SetUrl(url)
         requestClient.SetHeader("User-Agent", self.Config.UserAgent)
         requestClient.SetRetryCallback(rc.RetryCallback)
