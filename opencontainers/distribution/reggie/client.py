@@ -209,7 +209,9 @@ class NewClient:
 
         # Set the token to the original request and retry
         originalRequest.SetAuthToken(token)
-        return originalRequest.Execute(method=originalRequest.method, url=originalRequest.url)
+        return originalRequest.Execute(
+            method=originalRequest.method, url=originalRequest.url
+        )
 
 
 def parseAuthHeader(authHeaderRaw):
