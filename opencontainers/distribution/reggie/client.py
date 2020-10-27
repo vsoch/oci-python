@@ -176,9 +176,6 @@ class NewClient:
         if not authHeaderRaw:
             return originalResponse
 
-        # Clear query parameters for original request
-        originalRequest.clearParams()
-
         # If there is a callback, use it, should raise exception if issue
         if originalRequest.retryCallback:
             try:
@@ -186,42 +183,35 @@ class NewClient:
             except Exception as exc:
                 raise Exception("retry callback returned error: %s" % exc)
 
-        authenticationType = re.match("(?i).*(bearer|basic).*", authHeaderRaw)
-        if not authenticationType:
-            sys.exit("www-Authenticate header is malformed.")
+        # Prepare request to retry
+        h = parseAuthHeader(authHeaderRaw)
+        req = (
+            self.Client.NewRequest()
+            .SetQueryParam("service", h.Service)
+            .SetHeader("Accept", "application/json")
+            .SetHeader("User-Agent", self.Config.UserAgent)
+            .SetBasicAuth(self.Config.Username, self.Config.Password)
+        )
 
-        # Given a bearer token, prepare request for it
-        if authenticationType.groups()[0].lower() == "bearer":
-            h = parseAuthHeader(authHeaderRaw)
-            req = (
-                self.Client.NewRequest()
-                .SetQueryParam("service", h.Service)
-                .SetHeader("Accept", "application/json")
-                .SetHeader("User-Agent", self.Config.UserAgent)
-                .SetBasicAuth(self.Config.Username, self.Config.Password)
-            )
+        # Set the scope, first priority to config, then header
+        if self.Config.AuthScope:
+            req.SetQueryParam("scope", self.Config.AuthScope)
+        elif h.Scope:
+            req.SetQueryParam("scope", h.Scope)
 
-            # Set the scope, first priority to config, then header
-            if self.Config.AuthScope:
-                req.SetQueryParam("scope", self.Config.AuthScope)
-            elif h.Scope:
-                req.SetQueryParam("scope", h.Scope)
+        authResponse = req.Execute("GET", h.Realm)
 
-            authResponse = req.Execute("GET", h.Realm)
+        # Request the token
+        info = authResponse.json()
+        token = info.get("token")
+        if not token:
+            token = info.get("access_token")
 
-            # Request the token
-            info = authResponse.json()
-            token = info.get("token")
-            if not token:
-                token = info.get("access_token")
-
-            # Set the token to the original request and retry
-            originalRequest.SetAuthToken(token)
-
-        elif authenticationType.groups()[0].lower() == "basic":
-            originalRequest.SetBasicAuth(self.Config.Username, self.Config.Password)
-
-        return originalRequest.Execute(originalRequest.method, originalRequest.url)
+        # Set the token to the original request and retry
+        originalRequest.SetAuthToken(token)
+        return originalRequest.Execute(
+            method=originalRequest.method, url=originalRequest.url
+        )
 
 
 def parseAuthHeader(authHeaderRaw):
