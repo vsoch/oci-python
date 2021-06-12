@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020 Vanessa Sochat.
+# Copyright (C) 2019-2021 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -68,6 +68,7 @@ with open("README.md") as readme:
 if __name__ == "__main__":
 
     INSTALL_REQUIRES = get_requirements(lookup)
+    REGGIE_REQUIRES = get_requirements(lookup, "REGGIE_REQUIRES")
     TESTS_REQUIRES = get_requirements(lookup, "TESTS_REQUIRES")
 
     setup(

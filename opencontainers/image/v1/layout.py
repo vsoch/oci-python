@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020 Vanessa Sochat.
+# Copyright (C) 2019-2021 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -14,7 +14,10 @@ ImageLayoutVersion = "1.0.0"
 
 
 class ImageLayout(Struct):
-    """ImageLayout is the structure in the "oci-layout" file, found in the root
+    """
+    An ImageLayout structure.
+
+    ImageLayout is the structure in the "oci-layout" file, found in the root
     of an OCI Image-layout directory.
     """
 

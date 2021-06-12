@@ -21,7 +21,12 @@ cd {{ site.github_repo }}
 python setup.py install
 ```
 
-Note that this library (and thus documentation) is still under development.
+If you want to use the reggie client, you'll need a few extra dependencies like
+requests.
+
+```bash
+pip install opencontainers[reggie]
+```
 
 ## Distribution Specification
 
@@ -44,6 +49,12 @@ These sections will show you how to interact with Reggie. You can also look at t
 [test_distribution.py](https://github.com/vsoch/oci-python/blob/master/opencontainers/tests/test_distribution.py)
 that instantiates and uses the client to interact with a [mock server](https://github.com/vsoch/oci-python/blob/master/opencontainers/tests/mock_server.py). If you are looking to implement your own full server in Python,
 we direct you to [Django OCI](https://vsoch.github.io/django-oci/).
+
+```python
+from opencontainers.distribution.reggie import NewClient
+```
+
+Examples of using Reggie follow.
 
 #### Path Substitutions
 

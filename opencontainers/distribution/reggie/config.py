@@ -1,6 +1,6 @@
 """
 
-Copyright (C) 2020 Vanessa Sochat.
+Copyright (C) 2020-2021 Vanessa Sochat.
 
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -14,13 +14,19 @@ from .defaults import DEFAULT_USER_AGENT, URL_REGEX
 
 
 class BaseConfig:
-    """A BaseClient config holds attributes for some type of Reggie Client.
+    """
+    A Base client configuration.
+
+    A BaseClient config holds attributes for some type of Reggie Client.
     Setting functions are validation at creation time, and further validation is done
     with BaseClient.validate().
     """
 
     def __init__(self, opts=None):
-        """Instantiate a config. The subclass is required to call validate(), in case
+        """
+        Instantiate a config.
+
+        The subclass is required to call validate(), in case
         additional parameters or manipulation needs to be done.
         """
         # Opts must be a list of known functions
@@ -34,7 +40,10 @@ class BaseConfig:
         self.required = getattr(self, "required", [])
 
     def set_options(self, opts):
-        """Validate and set a list of options, looping through the list to set
+        """
+        Validate and set a list of options.
+
+        We loop through the list to set
         them for the config client. We also perform validation. Any issues
         with one of the functions raises an error.
         """
@@ -48,8 +57,10 @@ class BaseConfig:
             func(self)
 
     def validate_function(self, func):
-        """Ensure that a function is in fact a function, and that is it one of
-        the known ones to set an attribute.
+        """
+        Ensure that a function is in fact a function.
+
+        And that is it one of the known ones to set an attribute.
         """
         if not hasattr(func, "__name__"):
             raise ValueError(
@@ -63,7 +74,9 @@ class BaseConfig:
             )
 
     def validate(self):
-        """Validate config settings, done after initialization."""
+        """
+        Validate config settings, done after initialization.
+        """
         # Validation 1: required fields
         for setting in self.required:
             if not setting:

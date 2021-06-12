@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020 Vanessa Sochat.
+# Copyright (C) 2019-2021 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -9,7 +9,9 @@ from opencontainers.digest import Digest
 
 
 class Descriptor(Struct):
-    """Descriptor describes the disposition of targeted content.
+    """
+    Descriptor describes the disposition of targeted content.
+
     This structure provides `application/vnd.oci.descriptor.v1+json`
     mediatype when marshalled to JSON.
     """
@@ -61,7 +63,9 @@ class Descriptor(Struct):
 
 
 class Platform(Struct):
-    """Platform describes the platform which the image in the manifest runs on."""
+    """
+    Platform describes the platform which the image in the manifest runs on.
+    """
 
     def __init__(
         self,

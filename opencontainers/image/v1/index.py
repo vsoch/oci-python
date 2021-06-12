@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020 Vanessa Sochat.
+# Copyright (C) 2019-2021 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -13,7 +13,9 @@ import re
 
 
 class Index(Struct):
-    """Index references manifests for various platforms.
+    """
+    Index references manifests for various platforms.
+
     This structure provides `application/vnd.oci.image.index.v1+json`
     mediatype when marshalled to JSON.
     """
@@ -36,7 +38,10 @@ class Index(Struct):
         self.add("schemaVersion", schemaVersion)
 
     def _validate(self):
-        """custom validation function to ensure that Manifests mediaTypes
+        """
+        Validation functions for an index.
+
+        custom validation function to ensure that Manifests mediaTypes
         are valid.
         """
         valid_types = [MediaTypeImageManifest, MediaTypeImageIndex]

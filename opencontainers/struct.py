@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020 Vanessa Sochat.
+# Copyright (C) 2019-2021 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -11,8 +11,11 @@ import json
 import re
 
 
-class StructAttr(object):
-    """A struct attribute holds a name, jsonName, value, attribute type,
+class StructAttr:
+    """
+    A base structure for an opencontainers attribute.
+
+    A struct attribute holds a name, jsonName, value, attribute type,
     and if it's required or not. The name should hold the parameter name
     as reflected in the original (usually GoLang) implementation, while
     the jsonName is how it should be serialized to json.
@@ -54,7 +57,9 @@ class StructAttr(object):
         return self.__str__()
 
     def _is_struct(self, attType=None):
-        """determine if an attType is another struct we need to populate"""
+        """
+        Determine if an attType is another struct we need to populate
+        """
         # We can provide a nested attType to check
         if not attType:
             attType = self.attType
@@ -68,7 +73,10 @@ class StructAttr(object):
             return False
 
     def set(self, value):
-        """set a new value, and validate the type. Return true if set"""
+        """
+        Set a new value, and validate the type. Return true if set
+        """
+
         # First pass, it might be another object to add
         if self._is_struct():
             newStruct = self.attType()
@@ -102,8 +110,10 @@ class StructAttr(object):
         return False
 
     def to_dict(self):
-        """return a dictionary representation of the attribute. This won't
-        be called unless the attribute in question is a struct.
+        """
+        Return a dictionary representation of the attribute.
+
+        This won't be called unless the attribute in question is a struct.
         """
         if isinstance(self.value, (str, int)):
             return self.value
@@ -122,8 +132,11 @@ class StructAttr(object):
         return self.value.to_dict()
 
     def validate_datetime(self, value):
-        """validate a datetime string, but be generous to only check day,
-        month, year. This is a road nobody wants to go down.
+        """
+        Validate a datetime string.
+
+        This function is generous to only check day, month, year.
+        This is a road nobody wants to go down.
         """
         value = value.split("T")[0]
         try:  # "2015-10-31T22:22:56.015925234Z"
@@ -133,8 +146,10 @@ class StructAttr(object):
             return False
 
     def validate_regexp(self, value):
-        """validate a string or nested string values against a regular
-        expression. Return True if valid or not applicable, False otherwise
+        """
+        Validate a string or nested string values against a regular expression
+
+        Return True if valid or not applicable, False otherwise
         """
         if not self.regexp:
             return True
@@ -151,8 +166,11 @@ class StructAttr(object):
         return True
 
     def validate_type(self, value):
-        """ensure that an attribute is of the correct type. If we are given
-        a list as type, then the value within it is the type we are checking.
+        """
+        Ensure that an attribute is of the correct type.
+
+        If we are given a list as type, then the value within it is the
+        type we are checking.
         """
         # If it's a list with something inside
         if isinstance(self.attType, list):
@@ -179,8 +197,11 @@ class StructAttr(object):
         return True
 
 
-class Struct(object):
-    """a Struct is a general base class that allows for printing
+class Struct:
+    """
+    A general base class to print and validate attributes.
+
+    a Struct is a general base class that allows for printing
     and validating a set of attributes according to their defined subclass.
     the subclass should have an init function that uses the functions
     here to add required attributes.
@@ -199,7 +220,10 @@ class Struct(object):
         regexp="",
         hide=False,
     ):
-        """add a new attribute, including a name, json key to dump,
+        """
+        Add a new attributes.
+
+        add a new attribute, including a name, json key to dump,
         type, and if required. We don't need a value here. You can
         also update a current attribute here.
 
@@ -223,7 +247,10 @@ class Struct(object):
         )
 
     def _clear_values(self):
-        """if a load is done, we remove previously loaded values for any
+        """
+        Remove previously loaded values.
+
+        if a load is done, we remove previously loaded values for any
         attributes
         """
         for name, att in self.attrs.items():
@@ -233,9 +260,6 @@ class Struct(object):
         """return a Struct as a dictionary, must be valid"""
         # A lookup of "empty" values based on types (mirrors Go)
         lookup = {str: "", int: None, list: [], dict: {}}
-
-        # import code
-        # code.interact(local=locals())
 
         if self.validate():
             result = {}
@@ -257,31 +281,39 @@ class Struct(object):
             return result
 
     def to_json(self):
-        """get the dictionary of a struct and return pretty printed json"""
+        """
+        Get the dictionary of a struct and return pretty printed json
+        """
         result = self.to_dict()
         if result:
             result = json.dumps(result, indent=4)
         return result
 
     def add(self, name, value):
-        """add a value to an existing attribute, normally when used by a client"""
+        """
+        Add a value to an existing attribute, normally when used by a client
+        """
         if name not in self.attrs:
             bot.exit("%s is not a valid attribute." % name)
-
         attr = self.attrs[name]
 
+        # If we already have a value, update it
+        if attr.value and isinstance(attr.value, dict):
+            value.update(attr.value)
+        elif attr.value and isinstance(attr.value, list):
+            value = list(set(attr.value + [value]))
+
         # Don't validate the type if provided is empty
-        if value:
-            if not attr.set(value):
-                bot.exit("%s must be type %s." % (name, attr.attType))
+        if value and not attr.set(value):
+            bot.exit("%s must be type %s." % (name, attr.attType))
 
     def load(self, content, validate=True):
-        """given a dictionary load into its respective object
+        """
+        Load a dictionary of content into the structure.
+
+        given a dictionary load into its respective object
         if validate is True, we require it to be completely valid.
         """
-        # import code
-        # code.interact(local=locals())
-
         if not isinstance(content, dict):
             bot.exit("Please provide a dictionary or list to load.")
 
@@ -309,7 +341,10 @@ class Struct(object):
         return self
 
     def generate_json_lookup(self):
-        """based on the attributes, generate a jsonName lookup object.
+        """
+        Generate a json lookup object.
+
+        based on the attributes, generate a jsonName lookup object.
         keys are jsonNames we find in the wild, names are attribute names.
         """
         lookup = dict()
@@ -318,7 +353,10 @@ class Struct(object):
         return lookup
 
     def validate(self):
-        """validate goes through each attribute, and ensure that it is of the
+        """
+        Ensure that all attributes are valid.
+
+        validate goes through each attribute, and ensure that it is of the
         correct type, and if required it is defined. This is already done
         to some extent when load is called, but this function serves as
         a final validation (after an initial config is loaded).
@@ -347,7 +385,10 @@ class Struct(object):
 
 
 class StrStruct(Struct, str):
-    """a string Struct provides (generally) the same functions, but isn't
+    """
+    A String Structure
+
+    a string Struct provides (generally) the same functions, but isn't
     tied to attributes but rather a single string value.
     """
 
@@ -364,7 +405,10 @@ class StrStruct(Struct, str):
 
 
 class IntStruct(Struct, int):
-    """a string Struct provides (generally) the same functions, but isn't
+    """
+    An integer Structure
+
+    a string Struct provides (generally) the same functions, but isn't
     tied to attributes but rather a single string value.
     """
 

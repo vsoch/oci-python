@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020 Vanessa Sochat.
+# Copyright (C) 2019-2021 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -12,7 +12,10 @@ import re
 
 
 class Digest(StrStruct):
-    """Digest allows simple protection of hex formatted digest strings, prefixed
+    """
+    A Digest
+
+    Digest allows simple protection of hex formatted digest strings, prefixed
     by their algorithm. Strings of type Digest have some guarantee of being in
     the correct format and it provides quick access to the components of a
     digest string.
@@ -49,7 +52,10 @@ class Digest(StrStruct):
         return algorithm.validate(encoded)
 
     def sepIndex(self):
-        """return the index of the : separator or the index
+        """
+        Return the index of the : separator.
+
+        return the index of the : separator or the index
         that separtes the extra content provided in the algorithm name.
         """
         try:
@@ -67,7 +73,10 @@ class Digest(StrStruct):
         return self.index(":", 1)
 
     def startEncodedIndex(self):
-        """in the case of having an extra component, return the start of the
+        """
+        Return the start of the encoded portion
+
+        in the case of having an extra component, return the start of the
         encoded portion
         """
         match = re.search(":", self, 1)
@@ -75,15 +84,22 @@ class Digest(StrStruct):
 
     @property
     def algorithm(self):
-        """Algorithm returns the algorithm portion of the digest."""
+        """
+        Algorithm returns the algorithm portion of the digest.
+        """
         return Algorithm(self[: self.sepIndex()])
 
     def encoded(self):
-        """Encoded returns the encoded portion of the digest."""
+        """
+        Encoded returns the encoded portion of the digest.
+        """
         return self[self.startEncodedIndex() :]
 
     def verifier(self):
-        """Verifier returns a writer object that can be used to verify a stream of
+        """
+        Get a verifier
+
+        Verifier returns a writer object that can be used to verify a stream of
         content against the digest. If the digest is invalid, the method will panic.
         """
         from .verifiers import hashVerifier
@@ -102,12 +118,16 @@ DigestRegexpAnchored = re.compile("^%s$" % DigestRegexp)
 
 
 def NewDigestFromEncoded(algorithm, encoded):
-    """NewDigestFromEncoded returns a Digest from alg and the encoded digest."""
+    """
+    NewDigestFromEncoded returns a Digest from alg and the encoded digest.
+    """
     return Digest("%s:%s" % (algorithm, encoded))
 
 
 def NewDigestFromBytes(algorithm, content):
-    """NewDigestFromBytes returns a new digest from the byte contents of p.
+    """
+    NewDigestFromBytes returns a new digest from the byte contents of p.
+
     Typically, this can come from hash.Hash.Sum(...) or xxx.SumXXX(...)
     functions. This is also useful for rebuilding digests from binary
     serializations.
@@ -116,25 +136,33 @@ def NewDigestFromBytes(algorithm, content):
 
 
 def NewDigest(algorithm, hashObj):
-    """NewDigest returns a Digest from alg and a hash object"""
+    """
+    NewDigest returns a Digest from alg and a hash object
+    """
     return NewDigestFromBytes(algorithm, hashObj.digest())
 
 
 def FromBytes(p):
-    """FromBytes digests the input and returns a Digest."""
+    """
+    FromBytes digests the input and returns a Digest.
+    """
     from .algorithm import Canonical
 
     return Canonical.fromBytes(p)
 
 
 def FromString(p):
-    """FromString digests the input and returns a Digest."""
+    """
+    FromString digests the input and returns a Digest.
+    """
     return Canonical.fromString(p)
 
 
 def Parse(string):
-    """Parse parses s and returns the validated digest object. An error will
-    be returned if the format is invalid.
+    """
+    Parse parses s and returns the validated digest object.
+
+    An error will be returned if the format is invalid.
     """
     d = Digest(string)
     d.validate()

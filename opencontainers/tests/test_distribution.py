@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (C) 2019-2020 Vanessa Sochat.
+# Copyright (C) 2019-2021 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -20,7 +20,7 @@ mock_server_thread = None
 
 
 def setup_module(module):
-    """ setup any state specific to the execution of the given module."""
+    """setup any state specific to the execution of the given module."""
     global mock_server
     global mock_server_thread
     mock_server, mock_server_thread = start_mock_server(port)
