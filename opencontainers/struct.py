@@ -421,6 +421,12 @@ class Struct:
                 return False
         return True
 
+    def get(self, name, default=None):
+        r = self.attrs[name].value
+        if r is None:
+            r = default
+        return r
+
 
 class StrStruct(Struct, str):
     """
