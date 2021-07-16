@@ -11,6 +11,19 @@ import json
 import re
 
 
+def is_struct(attType):
+    """
+    Determine if an attType is another struct we need to populate
+    """
+    try:
+        return (
+            Struct in attType.__bases__
+            or StrStruct in attType.__bases__
+            or IntStruct in attType.__bases__
+        )
+    except:
+        return False
+
 class StructAttr:
     """
     A base structure for an opencontainers attribute.
@@ -42,7 +55,10 @@ class StructAttr:
         hide=False,
     ):
         self.name = name
-        self.value = value
+        if type(attType) is list and value is None:
+            self.value = []
+        else:
+            self.value = value
         self.attType = attType
         self.required = required
         self.regexp = regexp or ""
@@ -63,42 +79,36 @@ class StructAttr:
         # We can provide a nested attType to check
         if not attType:
             attType = self.attType
-        try:
-            return (
-                Struct in attType.__bases__
-                or StrStruct in attType.__bases__
-                or IntStruct in attType.__bases__
-            )
-        except:
-            return False
+        return is_struct(attType)
 
     def set(self, value):
         """
         Set a new value, and validate the type. Return true if set
         """
 
-        # First pass, it might be another object to add
-        if self._is_struct():
-            newStruct = self.attType()
-            value = newStruct.load(value)
+        if not is_struct(type(value)):
+            # First pass, it might be another object to add
+            if self._is_struct():
+                newStruct = self.attType()
+                value = newStruct.load(value)
 
-        # If it's a list with another type
-        elif isinstance(self.attType, list) and self.attType:
-            child = self.attType[0]
+            # If it's a list with another type
+            elif isinstance(self.attType, list) and self.attType:
+                child = self.attType[0]
 
-            # It's either a nested structure
-            if self._is_struct(child):
+                # It's either a nested structure
+                if is_struct(child):
 
-                # If we have a list of values, generate them
-                if isinstance(value, list):
-                    values = []
-                    for v in value:
+                    # If we have a list of values, generate them
+                    if isinstance(value, list):
+                        values = []
+                        for v in value:
+                            newStruct = child()
+                            values.append(newStruct.load(v))
+                        value = values
+                    else:
                         newStruct = child()
-                        values.append(newStruct.load(v))
-                    value = values
-                else:
-                    newStruct = child()
-                    value = newStruct.load(value)
+                        value = newStruct.load(value)
 
         # If we have a string with a regular expression
         if not self.validate_regexp(value):
@@ -293,15 +303,40 @@ class Struct:
         """
         Add a value to an existing attribute, normally when used by a client
         """
+        if value is None:
+            return
         if name not in self.attrs:
             bot.exit("%s is not a valid attribute." % name)
-        attr = self.attrs[name]
+        attr: StructAttr = self.attrs[name]
 
-        # If we already have a value, update it
-        if attr.value and isinstance(attr.value, dict):
-            value.update(attr.value)
-        elif attr.value and isinstance(attr.value, list):
-            value = list(set(attr.value + [value]))
+        valueType = type(value)
+        if attr._is_struct():
+            # Transform value to Struct if not already
+            if not is_struct(valueType):
+                value = attr.attType().load(value)
+        elif attr.attType == list or isinstance(attr.attType, list):
+            # Target is a list of Struct
+            if is_struct(attr.attType[0]):
+                # Load values from dict or list of dicts
+                # list may also already contain Structs
+                if valueType == dict:
+                    value = attr.attType[0]().load(value)
+                elif valueType == list:
+                    for k, v in enumerate(value):
+                        if not is_struct(value):
+                            value[k] = attr.attType[0]().load(v)
+
+            if valueType == list:
+                value = (attr.value or []) + value
+            else:
+                value = (attr.value or []) + [value]
+        elif attr.attType == dict:
+            if valueType == dict:
+                value.update(attr.value or {})
+            else:
+                raise ValueError("dict expected for {}, got {}: {}".format(name, valueType, value))
+        else:
+            pass
 
         # Don't validate the type if provided is empty
         if value and not attr.set(value):
@@ -314,25 +349,28 @@ class Struct:
         given a dictionary load into its respective object
         if validate is True, we require it to be completely valid.
         """
-        if not isinstance(content, dict):
-            bot.exit("Please provide a dictionary or list to load.")
+        if Struct in type(content).__bases__:
+            self = content
+        else:
+            if not isinstance(content, dict):
+                bot.exit("Please provide a dictionary to load.")
 
-        # Look up attributes based on jsonKey
-        lookup = self.generate_json_lookup()
+            # Look up attributes based on jsonKey
+            lookup = self.generate_json_lookup()
 
-        for key, value in content.items():
-            att = lookup.get(key)
-            if not att:
-                bot.exit("%s is not a valid json attribute." % key)
+            for key, value in content.items():
+                att = lookup.get(key)
+                if not att:
+                    bot.exit("%s is not a valid json attribute." % key)
 
-        # If we get here, all parameters are valid, replace
-        self._clear_values()
+            # If we get here, all parameters are valid, replace
+            self._clear_values()
 
-        for key, value in content.items():
-            att = lookup.get(key)
-            valid = att.set(value)
-            if not valid and validate:
-                bot.exit("%s (%s) is not valid." % (att.name, att.jsonName))
+            for key, value in content.items():
+                att = lookup.get(key)
+                valid = att.set(value)
+                if not valid and validate:
+                    bot.exit("%s (%s) is not valid." % (att.name, att.jsonName))
 
         # Validate the entire structure
         if validate:
@@ -392,7 +430,7 @@ class StrStruct(Struct, str):
     tied to attributes but rather a single string value.
     """
 
-    def __init__(self, value, **kwargs):
+    def __init__(self, value=None, **kwargs):
         self.value = value or ""
         super().__init__(**kwargs)
 
@@ -408,16 +446,16 @@ class IntStruct(Struct, int):
     """
     An integer Structure
 
-    a string Struct provides (generally) the same functions, but isn't
-    tied to attributes but rather a single string value.
+    a int Struct provides (generally) the same functions, but isn't
+    tied to attributes but rather a single int value.
     """
 
-    def __init__(self, value, **kwargs):
-        self.value = value or ""
+    def __init__(self, value=None, **kwargs):
+        self.value = value or 0
         super().__init__(**kwargs)
 
     def load(self, content, validate=True):
-        # If we have an int, self must also have string subclass
+        # If we have an int, self must also have int subclass
         if isinstance(self, int) and isinstance(content, int):
             self = self.__class__(content)
             self.validate()
