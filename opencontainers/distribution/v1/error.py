@@ -21,9 +21,9 @@ class ErrorInfo(Struct):
         self.newAttr(name="Message", attType=str, jsonName="message", required=True)
         self.newAttr(name="Detail", attType=str, jsonName="detail", required=True)
 
-        self.add("Code", code)
-        self.add("Message", message)
-        self.add("Detail", detail)
+        self.set("Code", code)
+        self.set("Message", message)
+        self.set("Detail", detail)
 
 
 class ErrorResponse(Struct):
@@ -34,7 +34,7 @@ class ErrorResponse(Struct):
         self.newAttr(
             name="Errors", attType=[ErrorInfo], jsonName="errors", required=True
         )
-        self.add("Errors", errors or [])
+        self.set("Errors", errors or [])
 
     def Error(self):
         """Error implements the Error interface."""
@@ -53,4 +53,4 @@ class ErrRegistry(Struct):
         self.newAttr(
             name="Errors", attType=[ErrorInfo], jsonName="errors", required=True
         )
-        self.add("Errors", errors or [])
+        self.set("Errors", errors or [])

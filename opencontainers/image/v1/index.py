@@ -33,9 +33,9 @@ class Index(Struct):
         # Annotations contains arbitrary metadata for the image index.
         self.newAttr(name="Annotations", attType=dict, jsonName="annotations")
 
-        self.add("Manifests", manifests)
-        self.add("Annotations", annotations)
-        self.add("schemaVersion", schemaVersion)
+        self.set("Manifests", manifests)
+        self.set("Annotations", annotations)
+        self.set("schemaVersion", schemaVersion)
 
     def _validate(self):
         """

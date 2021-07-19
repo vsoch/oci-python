@@ -33,4 +33,4 @@ class ImageLayout(Struct):
             required=True,
             regexp=regexp,
         )
-        self.add("Version", version or ImageLayoutVersion)
+        self.set("Version", version or ImageLayoutVersion)

@@ -91,7 +91,7 @@ class Logger:
         if self.stream_handler is not None:
             self.logger.removeHandler(self.stream_handler)
         self.stream_handler = stream_handler
-        self.logger.addHandler(stream_handler)
+        self.logger.setHandler(stream_handler)
 
     def set_level(self, level):
         self.logger.setLevel(level)

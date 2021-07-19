@@ -22,12 +22,12 @@ class StructTest(Struct):
         self.newAttr(name="Another", attType=AnotherStruct)
         self.newAttr(name="AnotherList", attType=[AnotherStruct])
 
-        self.add("Dict", Dict)
-        self.add("List", List)
-        self.add("Int", Int)
-        self.add("Str", Str)
-        self.add("Another", Another)
-        self.add("AnotherList", AnotherList)
+        self.set("Dict", Dict)
+        self.set("List", List)
+        self.set("Int", Int)
+        self.set("Str", Str)
+        self.set("Another", Another)
+        self.set("AnotherList", AnotherList)
 
 class AnotherStruct(Struct):
     def __init__(self, Attr=None, AttrList=None):
@@ -36,17 +36,15 @@ class AnotherStruct(Struct):
         self.newAttr("Attr", attType=StrStruct)
         self.newAttr("AttrList", attType=[AnotherStruct])
 
-        self.add("Attr", Attr)
-        self.add("AttrList", AttrList)
+        self.set("Attr", Attr)
+        self.set("AttrList", AttrList)
 
 
 def test_add(tmp_path):
     t = StructTest()
 
-    t.add("Dict", {"a": "b"})
-    t.add("List", [0, 1, 2])
-    t.add("Int", 987)
-    t.add("Str", "abc")
+    t.set("Dict", {"a": "b"})
+    t.set("List", [0, 1, 2])
 
     t.add("List", 3)
     assert t.to_dict()["List"] == [0, 1, 2, 3]
@@ -54,14 +52,49 @@ def test_add(tmp_path):
     t.add("Dict", {"a": "c", "b": "d"})
     assert t.to_dict()["Dict"] == {"a": "b", "b": "d"}
 
-    t.add("Int", 13)
-    assert t.to_dict()["Int"] == 1000
+    t.add("AnotherList", AnotherStruct("test"))
+    assert t.to_dict()["AnotherList"] == [{"Attr": "test"}]
 
-    t.add("Str", "def")
-    assert t.to_dict()["Str"] == "abcdef"
+    t.add("AnotherList", {"Attr": "123"})
+    t.add("AnotherList", [AnotherStruct("value"), {"Attr": "456"}])
+    assert {"Attr": "test"} in t.to_dict()["AnotherList"]
+    assert {"Attr":"123"} in t.to_dict()["AnotherList"]
+    assert {"Attr": "value"} in t.to_dict()["AnotherList"]
+    assert {"Attr":"456"} in t.to_dict()["AnotherList"]
+
+    assert StructTest(
+        Dict={"a": "b", "b": "d"},
+        List=[0, 1, 2, 3],
+        AnotherList=[
+            {"Attr": "test"},
+            {"Attr": "123"},
+            {"Attr": "value"},
+            {"Attr": "456"}]
+    ).to_dict() == t.to_dict()
+
+
+def test_set(tmp_path):
+    t = StructTest()
+
+    t.set("Dict", {"a": "b"})
+    t.set("List", [0, 1, 2])
+    t.set("Int", 987)
+    t.set("Str", "abc")
+
+    t.set("List", [3])
+    assert t.to_dict()["List"] == [3]
+
+    t.set("Dict", {"a": "c", "b": "d"})
+    assert t.to_dict()["Dict"] == {"a": "c", "b": "d"}
+
+    t.set("Int", 13)
+    assert t.to_dict()["Int"] == 13
+
+    t.set("Str", "def")
+    assert t.to_dict()["Str"] == "def"
 
     # Test support for nested Structs (list of Structs containing list of Structs)
-    t.add("Another", AnotherStruct(
+    t.set("Another", AnotherStruct(
         Attr="test",
         AttrList=[{
             "Attr": "abc",
@@ -80,33 +113,15 @@ def test_add(tmp_path):
     }
 
     # We can add Structs as object
-    t.add("Another", AnotherStruct("test"))
+    t.set("Another", AnotherStruct("test"))
     assert t.to_dict()["Another"] == {"Attr": "test"}
 
     # Or as Dict
-    t.add("Another", {"Attr": "test"})
+    t.set("Another", {"Attr": "test"})
     assert t.to_dict()["Another"] == {"Attr": "test"}
 
-    t.add("AnotherList", AnotherStruct("test"))
+    # Even if the attribute is a list of Struct
+    t.set("AnotherList", [AnotherStruct("test")])
     assert t.to_dict()["AnotherList"] == [{"Attr": "test"}]
-
-    t.add("AnotherList", {"Attr":"123"})
-    t.add("AnotherList", [AnotherStruct("value"), {"Attr":"456"}])
-    assert {"Attr": "test"} in t.to_dict()["AnotherList"]
-    assert {"Attr":"123"} in t.to_dict()["AnotherList"]
-    assert {"Attr": "value"} in t.to_dict()["AnotherList"]
-    assert {"Attr":"456"} in t.to_dict()["AnotherList"]
-
-
-    assert StructTest(
-        Dict={"a": "b", "b": "d"},
-        List=[0, 1, 2, 3],
-        Int=1000,
-        Str="abcdef",
-        Another={"Attr": "test"},
-        AnotherList=[
-            {"Attr": "test"},
-            {"Attr":"123"},
-            {"Attr": "value"},
-            {"Attr": "456"}]
-    ).to_dict() == t.to_dict()
+    t.set("AnotherList", [{"Attr": "test"}])
+    assert t.to_dict()["AnotherList"] == [{"Attr": "test"}]
