@@ -28,11 +28,14 @@ class StructTest(Struct):
         self.add("AnotherList", AnotherList)
 
 class AnotherStruct(Struct):
-    def __init__(self, attr=None):
+    def __init__(self, Attr=None, AttrList=None):
         super().__init__()
 
         self.newAttr("Attr", attType=StrStruct)
-        self.add("Attr", attr)
+        self.newAttr("AttrList", attType=[AnotherStruct])
+
+        self.add("Attr", Attr)
+        self.add("AttrList", AttrList)
 
 
 def test_add(tmp_path):
@@ -48,8 +51,30 @@ def test_add(tmp_path):
     t.add("Dict", {"a": "c", "b": "d"})
     assert t.to_dict()["Dict"] == {"a": "b", "b": "d"}
 
-    t.add("Int", 9876)
-    assert t.to_dict()["Int"] == 9876
+    t.add("Int", 13)
+    assert t.to_dict()["Int"] == 1000
+
+    t.add("Str", "def")
+    assert t.to_dict()["Str"] == "abcdef"
+
+    # Test support for nested Structs (list of Structs containing list of Structs)
+    t.add("Another", AnotherStruct(
+        Attr="test",
+        AttrList=[{
+            "Attr": "abc",
+            "AttrList": [{
+                "Attr": "onetwothree",
+            }],
+        }]))
+    assert t.to_dict()["Another"] == {
+        "Attr": "test",
+        "AttrList": [{
+            "Attr": "abc",
+            "AttrList": [{
+                "Attr": "onetwothree",
+            }],
+        }]
+    }
 
     # We can add Structs as object
     t.add("Another", AnotherStruct("test"))
