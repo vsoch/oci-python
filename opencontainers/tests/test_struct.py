@@ -11,12 +11,13 @@ import os
 import pytest
 
 class StructTest(Struct):
-    def __init__(self, Dict=None, List=None, Int=None, Another=None, AnotherList=None):
+    def __init__(self, Dict=None, List=None, Int=None, Str=None, Another=None, AnotherList=None):
         super().__init__()
 
         self.newAttr(name="Dict", attType=dict)
         self.newAttr(name="List", attType=list)
         self.newAttr(name="Int", attType=IntStruct)
+        self.newAttr(name="Str", attType=StrStruct)
 
         self.newAttr(name="Another", attType=AnotherStruct)
         self.newAttr(name="AnotherList", attType=[AnotherStruct])
@@ -24,6 +25,7 @@ class StructTest(Struct):
         self.add("Dict", Dict)
         self.add("List", List)
         self.add("Int", Int)
+        self.add("Str", Str)
         self.add("Another", Another)
         self.add("AnotherList", AnotherList)
 
@@ -44,6 +46,7 @@ def test_add(tmp_path):
     t.add("Dict", {"a": "b"})
     t.add("List", [0, 1, 2])
     t.add("Int", 987)
+    t.add("Str", "abc")
 
     t.add("List", 3)
     assert t.to_dict()["List"] == [0, 1, 2, 3]
@@ -98,7 +101,8 @@ def test_add(tmp_path):
     assert StructTest(
         Dict={"a": "b", "b": "d"},
         List=[0, 1, 2, 3],
-        Int=9876,
+        Int=1000,
+        Str="abcdef",
         Another={"Attr": "test"},
         AnotherList=[
             {"Attr": "test"},

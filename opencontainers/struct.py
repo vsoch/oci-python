@@ -314,6 +314,9 @@ class Struct:
             # Transform value to Struct if not already
             if not is_struct(valueType):
                 value = attr.attType().load(value)
+            if attr.attType in [StrStruct, IntStruct]:
+                if attr.value is not None:
+                    value = attr.value + value
         elif attr.attType == list or isinstance(attr.attType, list):
             # Target is a list of Struct
             if is_struct(attr.attType[0]):
