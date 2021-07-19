@@ -307,7 +307,7 @@ class Struct:
             return
         if name not in self.attrs:
             bot.exit("%s is not a valid attribute." % name)
-        attr: StructAttr = self.attrs[name]
+        attr = self.attrs[name]
 
         valueType = type(value)
         if attr._is_struct():
