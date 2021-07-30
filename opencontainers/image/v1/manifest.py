@@ -48,10 +48,10 @@ class Manifest(Struct):
         # Annotations contains arbitrary metadata for the image manifest.
         self.newAttr(name="Annotations", attType=dict, jsonName="annotations")
 
-        self.set("Config", manifestConfig)
-        self.set("Layers", layers)
-        self.set("Annotations", annotations)
-        self.set("schemaVersion", schemaVersion)
+        self.add("Config", manifestConfig)
+        self.add("Layers", layers)
+        self.add("Annotations", annotations)
+        self.add("schemaVersion", schemaVersion)
 
     def _validate(self):
         """

@@ -62,15 +62,15 @@ class ImageConfig(Struct):
         # StopSignal contains the system call signal that will be sent to the container to exit.
         self.newAttr(name="StopSignal", attType=str)
 
-        self.set("User", user)
-        self.set("ExposedPorts", ports)
-        self.set("Env", env)
-        self.set("Entrypoint", entrypoint)
-        self.set("Cmd", cmd)
-        self.set("Volumes", volumes)
-        self.set("WorkingDir", workingDir)
-        self.set("Labels", labels)
-        self.set("StopSignal", stopSignal)
+        self.add("User", user)
+        self.add("ExposedPorts", ports)
+        self.add("Env", env)
+        self.add("Entrypoint", entrypoint)
+        self.add("Cmd", cmd)
+        self.add("Volumes", volumes)
+        self.add("WorkingDir", workingDir)
+        self.add("Labels", labels)
+        self.add("StopSignal", stopSignal)
 
 
 class RootFS(Struct):
@@ -89,8 +89,8 @@ class RootFS(Struct):
             name="DiffIDs", attType=[Digest], omitempty=False, jsonName="diff_ids"
         )
 
-        self.set("RootFSType", rootfs_type)
-        self.set("DiffIDs", diff_ids)
+        self.add("RootFSType", rootfs_type)
+        self.add("DiffIDs", diff_ids)
 
 
 class History(Struct):
@@ -119,11 +119,11 @@ class History(Struct):
         # EmptyLayer is used to mark if the history item created a filesystem diff.
         self.newAttr("EmptyLayer", attType=bool, jsonName="empty_layer")
 
-        self.set("Created", created)
-        self.set("CreatedBy", created_by)
-        self.set("Author", author)
-        self.set("Comment", comment)
-        self.set("EmptyLayer", empty_layer)
+        self.add("Created", created)
+        self.add("CreatedBy", created_by)
+        self.add("Author", author)
+        self.add("Comment", comment)
+        self.add("EmptyLayer", empty_layer)
 
 
 class Image(Struct):
@@ -171,10 +171,10 @@ class Image(Struct):
         # History describes the history of each layer.
         self.newAttr("History", attType=[History], jsonName="history")
 
-        self.set("Created", created)
-        self.set("Author", author)
-        self.set("Architecture", arch)
-        self.set("OS", imageOS)
-        self.set("Config", imageConfig)
-        self.set("RootFS", rootfs)
-        self.set("History", hist)
+        self.add("Created", created)
+        self.add("Author", author)
+        self.add("Architecture", arch)
+        self.add("OS", imageOS)
+        self.add("Config", imageConfig)
+        self.add("RootFS", rootfs)
+        self.add("History", hist)

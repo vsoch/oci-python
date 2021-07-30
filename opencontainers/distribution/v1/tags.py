@@ -16,5 +16,5 @@ class TagList(Struct):
         super().__init__()
         self.newAttr(name="Name", attType=str, jsonName="name", required=True)
         self.newAttr(name="Name", attType=[str], jsonName="tags", required=True)
-        self.set("Name", name)
-        self.set("Tags", tags or [])
+        self.add("Name", name)
+        self.add("Tags", tags or [])

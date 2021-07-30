@@ -86,15 +86,14 @@ class StructAttr:
         Set a new value, and validate the type. Return true if set
         """
 
-        # If value is not a Struct try to construct it
         if not is_struct(type(value)):
+            # First pass, it might be another object to add
             if self._is_struct():
-                # Construct from value
                 newStruct = self.attType()
                 value = newStruct.load(value)
 
+            # If it's a list with another type
             elif isinstance(self.attType, list) and self.attType:
-                # Construct from list
                 child = self.attType[0]
 
                 # It's either a nested structure
@@ -302,15 +301,7 @@ class Struct:
 
     def add(self, name, value):
         """
-        Add a value to an existing list or dict attribute.
-        Adding to a list will append the value.
-        Adding to a dict will update the existing value using dict.update().
-
-        When adding to a attribute of type list, value may be:
-          - a single value or a list containing
-            - Struct
-            - dict (loaded using .load())
-        When adding to a dict attribute value may only be a dict.
+        Add a value to an existing attribute, normally when used by a client
         """
         if value is None:
             return
@@ -318,12 +309,15 @@ class Struct:
             bot.exit("%s is not a valid attribute." % name)
         attr = self.attrs[name]
 
-        if not (attr.attType in [list, dict] or isinstance(attr.attType, list)):
-            bot.exit("add() is only supported on attributes of type dict or list. " +
-                "Use set() to change a value of an attribute.")
-
         valueType = type(value)
-        if attr.attType == list or isinstance(attr.attType, list):
+        if attr._is_struct():
+            # Transform value to Struct if not already
+            if not is_struct(valueType):
+                value = attr.attType().load(value)
+            if attr.attType in [StrStruct, IntStruct]:
+                if attr.value is not None:
+                    value = attr.value + value
+        elif attr.attType == list or isinstance(attr.attType, list):
             # Target is a list of Struct
             if is_struct(attr.attType[0]):
                 # Load values from dict or list of dicts
@@ -344,26 +338,11 @@ class Struct:
                 value.update(attr.value or {})
             else:
                 raise ValueError("dict expected for {}, got {}: {}".format(name, valueType, value))
+        else:
+            pass
 
-        return self.set(name, value)
-
-    def set(self, name, value):
-        """
-        Set value of an existing attribute.
-        Value will be automatically transformed to a Struct using load(), but
-        you may also pass a Struct directly.
-        """
-        if value is None:
-            return
-        if name not in self.attrs:
-            bot.exit("%s is not a valid attribute." % name)
-        attr = self.attrs[name]
-
-        # Transform value to Struct if not already
-        if attr._is_struct() and not is_struct(type(value)):
-            value = attr.attType().load(value)
-
-        if not attr.set(value):
+        # Don't validate the type if provided is empty
+        if value and not attr.set(value):
             bot.exit("%s must be type %s." % (name, attr.attType))
 
     def load(self, content, validate=True):

@@ -17,4 +17,4 @@ class RepositoryList(Struct):
         self.newAttr(
             name="Repositories", attType=[str], jsonName="repositories", required=True
         )
-        self.set("Repositories", repositories or [])
+        self.add("Repositories", repositories or [])

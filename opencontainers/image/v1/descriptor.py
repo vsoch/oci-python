@@ -54,12 +54,12 @@ class Descriptor(Struct):
         # This should only be used when referring to a manifest.
         self.newAttr(name="Platform", attType=Platform, jsonName="platform")
 
-        self.set("Digest", digest)
-        self.set("Size", size)
-        self.set("MediaType", mediatype)
-        self.set("URLs", urls)
-        self.set("Annotations", annotations)
-        self.set("Platform", platform)
+        self.add("Digest", digest)
+        self.add("Size", size)
+        self.add("MediaType", mediatype)
+        self.add("URLs", urls)
+        self.add("Annotations", annotations)
+        self.add("Platform", platform)
 
 
 class Platform(Struct):
@@ -99,8 +99,8 @@ class Platform(Struct):
         # example `v7` to specify ARMv7 when architecture is `arm`.
         self.newAttr(name="Variant", attType=str, jsonName="variant")
 
-        self.set("Architecture", arch)
-        self.set("OS", platform_os)
-        self.set("OSVersion", os_version)
-        self.set("OSFeatures", os_features)
-        self.set("Variant", variant)
+        self.add("Architecture", arch)
+        self.add("OS", platform_os)
+        self.add("OSVersion", os_version)
+        self.add("OSFeatures", os_features)
+        self.add("Variant", variant)
