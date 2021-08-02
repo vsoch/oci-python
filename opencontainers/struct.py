@@ -55,7 +55,7 @@ class StructAttr:
         hide=False,
     ):
         self.name = name
-        if type(attType) is list and value is None:
+        if isinstance(attType, list) and value is None:
             self.value = []
         else:
             self.value = value
