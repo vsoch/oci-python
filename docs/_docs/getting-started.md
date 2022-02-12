@@ -421,6 +421,117 @@ response.json()
  'layers': []}
 ```
 
+##### Get A Manifest
+
+As shown above, it's fairly simple to get a manifest.
+
+```python
+req = src.NewRequest(
+    "GET",
+    "/v2/<name>/manifests/<reference>",
+    reggie.WithReference("0.1.2dev0"),
+)
+
+response = src.Do(req)
+manifest = resp.json()
+print(manifest)
+
+# The layers, config, and its digest are found here:
+layers = manifest["layers"]
+config_digest = manifest["config"]["digest"]
+```
+
+##### Get A Blob
+
+Let's say that we just retrieved the image config digest via the interaction above,
+and we want to further inspect or tweak it. You might do the following to retrieve
+the config blob:
+
+```python
+import reggie
+
+def GetBlob(digest):
+    req = src.NewRequest("GET", "/v2/<name>/blobs/<digest>", reggie.WithDigest(digest))
+    req.stream = True
+    return src.Do(req)
+```
+
+And then running the function, you could check the status code, act on it,
+and return json for the response.
+
+```python
+response = GetBlob(digest)
+config = response.json()
+```
+
+##### Add a Patch
+
+Let's say that you've retrieved the config blob from above, and we did that
+so we can get the last working directory of the container. We want
+to add a new layer that has a file in that directory.
+
+```python
+# Here is the working directory from the config loaded above
+working_dir = config["container_config"]["WorkingDir"]
+```
+
+Here we are going to write the file to an new .tar.gz.
+
+```python
+import tarfile
+
+PATCH_FILE = "patch.tar.gz"
+with tarfile.open(PATCH_FILE, mode="w:gz") as tf:
+    content = b"A new test file"
+    info = tarfile.TarInfo(os.path.join(working_dir, "test.txt"))
+    info.size = len(content)
+    tf.addfile(info, io.BytesIO(content))
+```
+
+And again here is a quick function for calculating the digest and size of this new archive:
+
+```python
+import hashlib
+
+def compute_digest(reader):
+    m = hashlib.sha256()
+    patch_size = 0
+    while True:
+        data = f.read(64000)
+        if not data:
+            break
+        m.update(data)
+        patch_size += len(data)
+    patch_digest = "sha256:" + m.hexdigest()
+    return patch_digest, patch_size
+```
+
+And do the calculating:
+
+```python
+with open(PATCH_FILE, "rb") as f:
+    patch_digest, patch_size = compute_digest(f)
+```
+
+We can now append the new information to our current manifest:
+
+```python
+manifest["layers"].append(
+    {
+        "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+        "size": patch_size,
+        "digest": patch_digest,
+    }
+)
+```
+
+And upload the new patch and manifest. 
+
+**todo: need to have discussion about what should be added to reggie vs. shown here**
+
+
+**Note** this example is provided from [this issue](https://github.com/vsoch/oci-python/issues/15#issuecomment-1035978143)
+and thank you to [Tristan](https://github.com/d4l3k)!
 
 ##### List Tags
 
