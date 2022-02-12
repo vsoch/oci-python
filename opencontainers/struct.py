@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2021 Vanessa Sochat.
+# Copyright (C) 2019-2022 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -23,6 +23,7 @@ def is_struct(attType):
         )
     except:
         return False
+
 
 class StructAttr:
     """
@@ -337,7 +338,9 @@ class Struct:
             if valueType == dict:
                 value.update(attr.value or {})
             else:
-                raise ValueError("dict expected for {}, got {}: {}".format(name, valueType, value))
+                raise ValueError(
+                    "dict expected for {}, got {}: {}".format(name, valueType, value)
+                )
         else:
             pass
 
