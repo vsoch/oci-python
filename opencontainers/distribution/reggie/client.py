@@ -1,6 +1,6 @@
 """
 
-Copyright (C) 2020 Vanessa Sochat.
+Copyright (C) 2020-2022 Vanessa Sochat.
 
 This Source Code Form is subject to the terms of the
 Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -20,7 +20,10 @@ import urllib.parse
 
 
 class ClientConfig(BaseConfig):
-    """A Client config holds attributes for a Reggie Client. Configuration setting
+    """
+    A Client config holds attributes for a Reggie Client.
+
+    Configuration setting
     functions are validation at creation time, and further validation is done
     with ClientConfig.validate().
     """
@@ -34,7 +37,9 @@ class ClientConfig(BaseConfig):
     ]
 
     def __init__(self, address, opts=None):
-        """Instantiate a config. An address is required."""
+        """
+        Instantiate a config. An address is required.
+        """
         self.Address = address
         self.AuthScope = None
         self.Username = None
@@ -46,7 +51,9 @@ class ClientConfig(BaseConfig):
         super().__init__()
 
     def _validate(self):
-        """Custom validation on top of BaseConfig validation."""
+        """
+        Custom validation on top of BaseConfig validation.
+        """
         # Validation 2: Address starts with http
         if not re.search(URL_REGEX, self.Address):
             raise ValueError("%s does not appear to be a http address." % self.Address)
@@ -56,7 +63,9 @@ class ClientConfig(BaseConfig):
 
 
 def WithUsernamePassword(username, password):
-    """WithUsernamePassword sets registry username and password configuration settings."""
+    """
+    WithUsernamePassword sets registry username and password configuration settings.
+    """
 
     def WithUsernamePassword(config):
         config.Username = username
@@ -66,7 +75,9 @@ def WithUsernamePassword(username, password):
 
 
 def WithAuthScope(authScope):
-    """WithAuthScope overrides the scope provided by the authorization server."""
+    """
+    WithAuthScope overrides the scope provided by the authorization server.
+    """
 
     def WithAuthScope(config):
         config.AuthScope = authScope
@@ -75,7 +86,9 @@ def WithAuthScope(authScope):
 
 
 def WithDefaultName(namespace):
-    """WithDefaultName sets the default registry namespace configuration setting."""
+    """
+    WithDefaultName sets the default registry namespace configuration setting.
+    """
 
     def WithDefaultName(config):
         config.DefaultName = namespace
@@ -84,7 +97,9 @@ def WithDefaultName(namespace):
 
 
 def WithDebug(debug):
-    """WithDebug enables or disables debug mode."""
+    """
+    WithDebug enables or disables debug mode.
+    """
 
     def WithDebug(config):
         config.Debug = debug
@@ -93,7 +108,9 @@ def WithDebug(debug):
 
 
 def WithUserAgent(userAgent):
-    """WithUserAgent overrides the client user agent"""
+    """
+    WithUserAgent overrides the client user agent
+    """
 
     def WithUserAgent(config):
         config.UserAgent = userAgent
@@ -105,13 +122,18 @@ def WithUserAgent(userAgent):
 
 
 class NewClient:
-    """A Client is a handle to create and issue requests to an OCI distribution
-    registry. It is based on the Go version of reggie by BloodOrange.io,
+    """
+    A handle to create and issue requests to an OCI distribution registry
+
+    It is based on the Go version of reggie by BloodOrange.io,
     https://github.com/bloodorangeio/reggie/blob/master/client.go
     """
 
     def __init__(self, address, *opts):
-        """create a new client, requiring an address, and a Client Config.
+        """
+        Create a new client
+
+        Requiring an address, and a Client Config.
         Matched to NewClient: builds a new Client from provided options.
         """
         self.Config = ClientConfig(address)
@@ -124,11 +146,15 @@ class NewClient:
         self.Client.max_redirects = 20
 
     def SetDefaultName(self, namespace):
-        """SetDefaultName sets the default registry namespace to use for building a Request."""
+        """
+        SetDefaultName sets the default registry namespace to use for building a Request.
+        """
         self.Config.DefaultName = namespace
 
     def NewRequest(self, method, path, *opts):
-        """Prepare a request for some method, path (url) and set of options."""
+        """
+        Prepare a request for some method, path (url) and set of options.
+        """
         rc = RequestConfig(opts)
         requestClient = self.Client.NewRequest()
         requestClient.SetMethod(method)
@@ -157,7 +183,10 @@ class NewClient:
         return requestClient
 
     def Do(self, req):
-        """Given a request (an instance of the RequestClient, execute the request
+        """
+        Execut a request.
+
+        Given a request (an instance of the RequestClient, execute the request
         and return a response.
         """
         # a requests.Response with additional retryCallback
@@ -169,7 +198,10 @@ class NewClient:
         return response
 
     def retryRequestWithAuth(self, originalRequest, originalResponse):
-        """Given a 401 response (Authentication needed) retrieve the WWW-Authenticate
+        """
+        Retry a request with authentication.
+
+        Given a 401 response (Authentication needed) retrieve the WWW-Authenticate
         header and retry with authentication
         """
         authHeaderRaw = originalResponse.headers.get("Www-Authenticate")
@@ -215,7 +247,9 @@ class NewClient:
 
 
 def parseAuthHeader(authHeaderRaw):
-    """parse authentication header into pieces"""
+    """
+    Parse an authentication header into pieces
+    """
     regex = re.compile('([a-zA-z]+)="(.+?)"')
     matches = regex.findall(authHeaderRaw)
     lookup = dict()
@@ -226,7 +260,9 @@ def parseAuthHeader(authHeaderRaw):
 
 class authHeader:
     def __init__(self, lookup):
-        """Given a dictionary of values, match them to class attributes"""
+        """
+        Given a dictionary of values, match them to class attributes
+        """
         for key in lookup:
             if key in ["realm", "service", "scope"]:
                 setattr(self, key.capitalize(), lookup[key])

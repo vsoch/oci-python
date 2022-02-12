@@ -1,4 +1,4 @@
-# Copyright (C) 2019-2020 Vanessa Sochat.
+# Copyright (C) 2019-2022 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
@@ -20,7 +20,10 @@ from .mediatype import (
 
 
 class Manifest(Struct):
-    """Manifest provides `application/vnd.oci.image.manifest.v1+json`
+    """
+    A Manifest Structure
+
+    Manifest provides `application/vnd.oci.image.manifest.v1+json`
     mediatype structure when marshalled to JSON.
     """
 
@@ -51,7 +54,10 @@ class Manifest(Struct):
         self.add("schemaVersion", schemaVersion)
 
     def _validate(self):
-        """custom validation function to ensure that Config and Layers mediaTypes
+        """
+        Custom validation functions for an image Manifest.
+
+        custom validation function to ensure that Config and Layers mediaTypes
         are valid. By the time we get here, we know there is a Config object,
         and there can be one or more layers.
         """
@@ -81,7 +87,9 @@ class Manifest(Struct):
         return True
 
     def _validateLayerMediaTypes(self):
-        """validate the Layer Media Types"""
+        """
+        Validate the Layer Media Types
+        """
         # These are valid mediaTypes for layers
         layerMediaTypes = [
             MediaTypeImageLayer,

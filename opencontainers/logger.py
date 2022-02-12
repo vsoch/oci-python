@@ -1,247 +1,187 @@
-# Copyright (C) 2017-2020 Vanessa Sochat.
+# Copyright (C) 2019-2022 Vanessa Sochat.
 
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed
 # with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import os
+import logging as _logging
+import platform
 import sys
-
-ABORT = -5
-CRITICAL = -4
-ERROR = -3
-WARNING = -2
-LOG = -1
-INFO = 1
-CUSTOM = 1
-QUIET = 0
-VERBOSE = VERBOSE1 = 2
-VERBOSE2 = 3
-VERBOSE3 = 4
-DEBUG = 5
-
-PURPLE = "\033[95m"
-YELLOW = "\033[93m"
-RED = "\033[91m"
-DARKRED = "\033[31m"
-CYAN = "\033[36m"
+import os
+import threading
+import inspect
 
 
-class OCILogger:
-    def __init__(self, logfile=None, level=None):
-        """the logger is based on discovery in the environment, and is
-        initialized by the plugin. By default we print logs to an output
-        file that is named according to the plugin, unless the user
-        sets the level to quiet.
+class ColorizingStreamHandler(_logging.StreamHandler):
 
-        Parameters
-        ==========
-        logfile: should be the path to write the logfile
-        level: can be an integer or string level, defaults to DEBUG
-        """
-        self.level = get_logging_level(level)
-        self.logfile = logfile
-        self.errorStream = sys.stderr
-        self.outputStream = sys.stdout
-        self.colorize = self.useColor()
-        self.colors = {
-            ABORT: DARKRED,
-            CRITICAL: RED,
-            ERROR: RED,
-            WARNING: YELLOW,
-            LOG: PURPLE,
-            CUSTOM: PURPLE,
-            DEBUG: CYAN,
-            "OFF": "\033[0m",  # end sequence
-            "CYAN": CYAN,
-            "PURPLE": PURPLE,
-            "RED": RED,
-            "DARKRED": DARKRED,
-            "YELLOW": YELLOW,
-        }
+    BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+    RESET_SEQ = "\033[0m"
+    COLOR_SEQ = "\033[%dm"
+    BOLD_SEQ = "\033[1m"
 
-    # Colors --------------------------------------------
+    colors = {
+        "WARNING": YELLOW,
+        "INFO": GREEN,
+        "DEBUG": BLUE,
+        "CRITICAL": RED,
+        "ERROR": RED,
+    }
 
-    def useColor(self):
-        """useColor will determine if color should be added
-        to a print. If logging to file, no color is used. Otherwise, we
-        check if being run in a terminal, and if has support for ascii
-        """
-        if self.logfile:
+    def __init__(self, nocolor=False, stream=sys.stderr, use_threads=False):
+        super().__init__(stream=stream)
+        self._output_lock = threading.Lock()
+        self.nocolor = nocolor or not self.can_color_tty()
+
+    def can_color_tty(self):
+        if "TERM" in os.environ and os.environ["TERM"] == "dumb":
             return False
+        return self.is_tty and not platform.system() == "Windows"
 
-        streams = [self.errorStream, self.outputStream]
-        for stream in streams:
-            if not hasattr(stream, "isatty") or not stream.isatty():
-                return False
-        return True
+    @property
+    def is_tty(self):
+        isatty = getattr(self.stream, "isatty", None)
+        return isatty and isatty()
 
-    def addColor(self, level, text):
-        """addColor to the prompt (usually prefix) if terminal
-        supports, and specified to do so
-        """
-        if self.colorize:
-            if level in self.colors:
-                text = "%s%s%s" % (self.colors[level], text, self.colors["OFF"])
-        return text
+    def emit(self, record):
+        with self._output_lock:
+            try:
+                self.format(record)  # add the message to the record
+                self.stream.write(self.decorate(record))
+                self.stream.write(getattr(self, "terminator", "\n"))
+                self.flush()
+            except BrokenPipeError as e:
+                raise e
+            except (KeyboardInterrupt, SystemExit):
+                # ignore any exceptions in these cases as any relevant messages have been printed before
+                pass
+            except Exception:
+                self.handleError(record)
 
-    def emitError(self, level):
-        """determine if a level should print to
-        stderr, includes all levels but INFO and QUIET
-        """
-        return level in [
-            ABORT,
-            ERROR,
-            WARNING,
-            VERBOSE,
-            VERBOSE1,
-            VERBOSE2,
-            VERBOSE3,
-            DEBUG,
-        ]
+    def decorate(self, record):
+        message = record.message
+        message = [message]
+        if not self.nocolor and record.levelname in self.colors:
+            message.insert(0, self.COLOR_SEQ % (30 + self.colors[record.levelname]))
+            message.append(self.RESET_SEQ)
+        return "".join(message)
 
-    def emitOutput(self, level):
-        """determine if a level should print to stdout (only INFO and LOG)"""
-        return level in [LOG, INFO]
 
-    def isEnabledFor(self, messageLevel):
-        """check if a messageLevel is enabled to emit a level"""
-        return messageLevel <= self.level and not self.is_quiet()
+class Logger:
+    def __init__(self):
+        self.logger = _logging.getLogger(__name__)
+        self.log_handler = [self.text_handler]
+        self.stream_handler = None
+        self.printshellcmds = False
+        self.quiet = False
+        self.logfile = None
+        self.last_msg_was_job_info = False
+        self.logfile_handler = None
 
-    def emit(self, level, message, prefix=None, color=None):
-        """emit is the main function to print the message
-        optionally with a prefix. If we have a logfile, we print
-        to it instead.
+    def cleanup(self):
+        if self.logfile_handler is not None:
+            self.logger.removeHandler(self.logfile_handler)
+            self.logfile_handler.close()
+        self.log_handler = [self.text_handler]
 
-        Parameters
-        ==========
-        level: the level of the message
-        message: the message to print
-        prefix: a prefix for the message
-        """
-        if color is None:
-            color = level
+    def handler(self, msg):
+        for handler in self.log_handler:
+            handler(msg)
 
-        if prefix is not None:
-            prefix = self.addColor(color, "%s " % (prefix))
-        else:
-            prefix = ""
-            message = self.addColor(color, message)
+    def set_stream_handler(self, stream_handler):
+        if self.stream_handler is not None:
+            self.logger.removeHandler(self.stream_handler)
+        self.stream_handler = stream_handler
+        self.logger.addHandler(stream_handler)
 
-        # Add the prefix
-        message = "%s%s" % (prefix, message)
+    def set_level(self, level):
+        self.logger.setLevel(level)
 
-        if not message.endswith("\n"):
-            message = "%s\n" % message
+    def location(self, msg):
+        callerframerecord = inspect.stack()[1]
+        frame = callerframerecord[0]
+        info = inspect.getframeinfo(frame)
+        self.debug(
+            "{}: {info.filename}, {info.function}, {info.lineno}".format(msg, info=info)
+        )
 
-        # Case 1: print logs to file (must be enabled and not quiet)
-        if self.logfile and self.isEnabledFor(level):
-            self.writeFile(message)
+    def info(self, msg):
+        self.handler(dict(level="info", msg=msg))
 
-        # Otherwise if in range, not quiet, print to stdout and stderr
-        elif self.isEnabledFor(level):
-            if self.emitError(level):
-                self.write(self.errorStream, message)
-            else:
-                self.write(self.outputStream, message)
+    def warning(self, msg):
+        self.handler(dict(level="warning", msg=msg))
 
-    def write(self, stream, message):
-        """write a message to a stream, and check the encoding"""
-        if isinstance(message, bytes):
-            message = message.decode("utf-8")
-        stream.write(message)
+    def debug(self, msg):
+        self.handler(dict(level="debug", msg=msg))
 
-    def writeFile(self, message):
-        """write a message to a stream, and check the encoding"""
-        if isinstance(message, bytes):
-            message = message.decode("utf-8")
+    def error(self, msg):
+        self.handler(dict(level="error", msg=msg))
 
-        with open(self.logfile, "a") as filey:
-            filey.writelines(message)
-
-    # Logging ------------------------------------------
-
-    def abort(self, message):
-        self.emit(ABORT, message, "ABORT")
-
-    def critical(self, message):
-        self.emit(CRITICAL, message, "CRITICAL")
-
-    def error(self, message):
-        self.emit(ERROR, message, "ERROR")
-
-    def exit(self, message, return_code=1):
-        self.emit(ERROR, message, "ERROR")
+    def exit(self, msg, return_code=1):
+        self.handler(dict(level="error", msg=msg))
         sys.exit(return_code)
 
-    def warning(self, message):
-        self.emit(WARNING, message, "WARNING")
+    def progress(self, done=None, total=None):
+        self.handler(dict(level="progress", done=done, total=total))
 
-    def log(self, message):
-        self.emit(LOG, message, "LOG")
+    def shellcmd(self, msg):
+        if msg is not None:
+            msg = dict(level="shellcmd", msg=msg)
+            self.handler(msg)
 
-    def custom(self, prefix, message="", color=PURPLE):
-        self.emit(CUSTOM, message, prefix, color)
-
-    def info(self, message):
-        self.emit(INFO, message)
-
-    def newline(self):
-        return self.info("")
-
-    def verbose(self, message):
-        self.emit(VERBOSE, message, "VERBOSE")
-
-    def verbose1(self, message):
-        self.emit(VERBOSE, message, "VERBOSE1")
-
-    def verbose2(self, message):
-        self.emit(VERBOSE2, message, "VERBOSE2")
-
-    def verbose3(self, message):
-        self.emit(VERBOSE3, message, "VERBOSE3")
-
-    def debug(self, message):
-        self.emit(DEBUG, message, "DEBUG")
-
-    def is_quiet(self):
-        """is_quiet returns true if the level is 0"""
-        return self.level == QUIET
-
-
-def get_logging_level(default_level=None):
-    """get_logging_level based on an int or user specific string, default INFO"""
-    if not default_level:
-        default_level = DEBUG
-    level = os.environ.get("MESSAGELEVEL", default_level)
-
-    # User knows logging levels and set one
-    if isinstance(level, int):
-        return level
-
-    # Otherwise it's a string
-    if level == "CRITICAL":
-        return CRITICAL
-    elif level == "ABORT":
-        return ABORT
-    elif level == "ERROR":
-        return ERROR
-    elif level == "WARNING":
-        return WARNING
-    elif level == "LOG":
-        return LOG
-    elif level == "INFO":
-        return INFO
-    elif level == "QUIET":
-        return QUIET
-    elif level.startswith("VERBOSE"):
-        return VERBOSE3
-    elif level == "LOG":
-        return LOG
-    elif level == "DEBUG":
-        return DEBUG
-
-    return level
+    def text_handler(self, msg):
+        """The default snakemake log handler.
+        Prints the output to the console.
+        Args:
+            msg (dict):     the log message dictionary
+        """
+        level = msg["level"]
+        if level == "info" and not self.quiet:
+            self.logger.info(msg["msg"])
+        if level == "warning":
+            self.logger.warning(msg["msg"])
+        elif level == "error":
+            self.logger.error(msg["msg"])
+        elif level == "debug":
+            self.logger.debug(msg["msg"])
+        elif level == "progress" and not self.quiet:
+            done = msg["done"]
+            total = msg["total"]
+            p = done / total
+            percent_fmt = ("{:.2%}" if p < 0.01 else "{:.0%}").format(p)
+            self.logger.info(
+                "{} of {} steps ({}) done".format(done, total, percent_fmt)
+            )
+        elif level == "shellcmd":
+            if self.printshellcmds:
+                self.logger.warning(msg["msg"])
 
 
-bot = OCILogger()
+bot = Logger()
+
+
+def setup_logger(
+    quiet=False,
+    printshellcmds=False,
+    nocolor=False,
+    stdout=False,
+    debug=False,
+    verbose=False,
+    use_threads=False,
+    wms_monitor=None,
+):
+    # console output only if no custom logger was specified
+    stream_handler = ColorizingStreamHandler(
+        nocolor=nocolor,
+        stream=sys.stdout if stdout else sys.stderr,
+        use_threads=use_threads,
+    )
+    level = _logging.INFO
+    if verbose:
+        level = _logging.VERBOSE
+    elif debug:
+        level = _logging.DEBUG
+
+    logger.set_stream_handler(stream_handler)
+    logger.set_level(level)
+    logger.quiet = quiet
+    logger.printshellcmds = printshellcmds
