@@ -9,7 +9,7 @@ with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 
 from .defaults import DEFAULT_USER_AGENT, URL_REGEX
-from .request import RequestConfig, RequestClient, WithDigest
+from .request import RequestConfig, RequestClient
 from .config import BaseConfig
 from copy import deepcopy
 
@@ -181,16 +181,6 @@ class NewClient:
 
         # Return the Client, which has Request and retryCallback
         return requestClient
-
-    def GetBlob(digest):
-        """
-        Get Blob returns the request for a specific digest,
-        """
-        req = self.NewRequest(
-            "GET", "/v2/<name>/blobs/<digest>", reggie.WithDigest(digest)
-        )
-        req.stream = True
-        return src.Do(req)
 
     def Do(self, req):
         """
