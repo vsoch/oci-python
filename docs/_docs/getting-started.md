@@ -448,8 +448,6 @@ and we want to further inspect or tweak it. You might do the following to retrie
 the config blob:
 
 ```python
-import reggie
-
 def GetBlob(digest):
     req = src.NewRequest("GET", "/v2/<name>/blobs/<digest>", reggie.WithDigest(digest))
     req.stream = True
@@ -524,8 +522,8 @@ manifest["layers"].append(
     }
 )
 ```
-
-And upload the new patch and manifest. 
+Note that the mediaType differs between Docker v2 and oci images.
+Then upload the new patch and manifest. 
 
 **todo: need to have discussion about what should be added to reggie vs. shown here**
 
