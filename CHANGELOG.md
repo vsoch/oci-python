@@ -16,6 +16,7 @@ Critical items to know are:
 Versions here coincide with releases on pypi.
 
 ## [master](https://github.com/vsoch/oci-python)
+ - do not set basic auth if no username/password provided (0.0.14)
  - allow for update of a structure attribute, if applicable (0.0.13)
  - fix to bug with parsing www-Authenticate (0.0.12)
  - adding distribution spec (0.0.11)
