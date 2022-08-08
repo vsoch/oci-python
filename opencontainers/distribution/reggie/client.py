@@ -222,8 +222,11 @@ class NewClient:
             .SetQueryParam("service", h.Service)
             .SetHeader("Accept", "application/json")
             .SetHeader("User-Agent", self.Config.UserAgent)
-            .SetBasicAuth(self.Config.Username, self.Config.Password)
         )
+
+        # Do not set basic auth if no username/password provided
+        if self.Config.Username and self.Config.Password:
+            req = req.SetBasicAuth(self.Config.Username, self.Config.Password)
 
         # Set the scope, first priority to config, then header
         if self.Config.AuthScope:
