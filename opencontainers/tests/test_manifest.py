@@ -140,7 +140,7 @@ expected_bounds_pass = {
             "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
             "size": 1470,
             "digest": "sha256.foo-bar:c86f7763873b6c0aae22d963bab59b4f5debbed6685761b5951584f6efb0633b",
-        }
+        },
         # multihash is not registered, but still valid formatting, but here we would consider it invalid
         # {
         #  "mediaType": "application/vnd.oci.image.config.v1+json",
