@@ -7,6 +7,7 @@ from .client import (
     WithDefaultName,
     WithDebug,
     WithUserAgent,
+    WithProxy,
 )
 from .request import (
     WithName,

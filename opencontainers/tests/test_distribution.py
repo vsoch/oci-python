@@ -11,6 +11,8 @@ from opencontainers.distribution.reggie import *
 import os
 import re
 import pytest
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from threading import Thread
 
 
 # Use the same port across tests
@@ -19,11 +21,51 @@ mock_server = None
 mock_server_thread = None
 
 
+# Simple HTTP proxy server for testing proxy functionality
+class SimpleProxyHandler(BaseHTTPRequestHandler):
+    """A simple HTTP proxy handler that logs requests"""
+
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Request proxied successfully")
+        print(f"Proxy handled request: {self.path}")
+
+    def do_PUT(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Request proxied successfully")
+        print(f"Proxy handled PUT request: {self.path}")
+
+    def log_message(self, format, *args):
+        # Customize logging to show it's from the proxy
+        print(f"PROXY LOG: {format % args}")
+
+
+# Global variables for proxy server
+proxy_port = get_free_port()
+proxy_server = None
+proxy_server_thread = None
+
+
 def setup_module(module):
     """setup any state specific to the execution of the given module."""
     global mock_server
     global mock_server_thread
+    global proxy_server
+    global proxy_server_thread
+
+    # Start the mock registry server
     mock_server, mock_server_thread = start_mock_server(port)
+
+    # Start the proxy server
+    proxy_server = HTTPServer(("localhost", proxy_port), SimpleProxyHandler)
+    proxy_server_thread = Thread(target=proxy_server.serve_forever)
+    proxy_server_thread.setDaemon(True)
+    proxy_server_thread.start()
+    print(f"Proxy server started on port {proxy_port}")
 
 
 def teardown_module(module):
@@ -31,6 +73,7 @@ def teardown_module(module):
     method.
     """
     mock_server.server_close()
+    proxy_server.server_close()
 
 
 def test_distribution_mock_server(tmp_path):
@@ -46,6 +89,24 @@ def test_distribution_mock_server(tmp_path):
         WithUserAgent("reggie-tests"),
     )
     assert not client.Config.Debug
+
+    print("Testing creation of client with proxy")
+    proxy_url = f"http://localhost:{proxy_port}"
+    proxy_client = NewClient(
+        mock_url,
+        WithUsernamePassword("testuser", "testpass"),
+        WithDefaultName("testname"),
+        WithUserAgent("reggie-tests"),
+        WithProxy(proxy_url),
+    )
+    assert proxy_client.Config.Proxy == proxy_url
+
+    # Make a request with the proxy client
+    req = proxy_client.NewRequest("GET", "/v2/<n>/tags/list")
+    response = proxy_client.Do(req)
+    assert (
+        response.status_code == 200
+    ), f"Expected status code 200, got {response.status_code}"
 
     print("Testing setting debug option")
     clientDebug = NewClient(mock_url, WithDebug(True))
@@ -189,6 +250,27 @@ def test_distribution_mock_server(tmp_path):
     print("Check that the body did not get lost somewhere")
     assert req.body == "abc"
 
+    print("Test proxy request with different configuration")
+    # Create a client with a different proxy configuration
+    alt_proxy_url = f"http://localhost:{proxy_port}/alternate"
+    alt_proxy_client = NewClient(
+        mock_url,
+        WithProxy(alt_proxy_url),
+    )
+    assert alt_proxy_client.Config.Proxy == alt_proxy_url
+
+    # Verify that proxy setting is correctly passed to the request
+    proxy_req = alt_proxy_client.NewRequest("GET", "/v2/test/tags/list")
+    assert (
+        proxy_req.proxies
+    ), "Request should have non-empty proxies dictionary when proxy is set"
+    assert (
+        proxy_req.proxies.get("http") == alt_proxy_url
+    ), "HTTP proxy not correctly set"
+    assert (
+        proxy_req.proxies.get("https") == alt_proxy_url
+    ), "HTTPS proxy not correctly set"
+
     print("Test that the retry callback is invoked, if configured.")
     newBody = "not the original body"
 
@@ -214,3 +296,12 @@ def test_distribution_mock_server(tmp_path):
         )
     except Exception as exc:
         assert "ruhroh" in str(exc)
+
+    print("Test proxy setting in request client")
+    # Directly test the SetProxy method on the request client
+    req = client.NewRequest("GET", "/test/endpoint")
+    proxy_addr = f"http://localhost:{proxy_port}/direct-test"
+    req.SetProxy(proxy_addr)
+    # Verify that the proxy is set in the underlying request object when it's executed
+    response = client.Do(req)
+    assert response.status_code == 200, "Request through proxy should succeed"

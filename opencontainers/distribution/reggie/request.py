@@ -35,6 +35,7 @@ class RequestConfig(BaseConfig):
         "WithDigest",
         "WithSessionID",
         "WithRetryCallback",
+        "WithProxy",
     ]
 
     def __init__(self, opts):
@@ -46,6 +47,7 @@ class RequestConfig(BaseConfig):
         self.Digest = None
         self.SessionID = None
         self.RetryCallback = None
+        self.Proxy = None
         self.required = [self.Name]
         super().__init__(opts or [])
 
@@ -106,6 +108,17 @@ def WithRetryCallback(retryCallback):
         config.RetryCallback = retryCallback
 
     return WithRetryCallback
+
+
+def WithProxy(proxy):
+    """
+    WithProxy sets the proxy configuration setting for requests.
+    """
+
+    def WithProxy(config):
+        config.Proxy = proxy
+
+    return WithProxy
 
 
 class RequestClient(requests.Session):
@@ -243,6 +256,18 @@ class RequestClient(requests.Session):
         auth_str = "%s:%s" % (username, password)
         auth_header = base64.b64encode(auth_str.encode("utf-8"))
         return self.SetHeader("Authorization", "Basic %s" % auth_header.decode("utf-8"))
+
+    def SetProxy(self, proxy):
+        """
+        SetProxy sets the proxy configuration setting for requests.
+        """
+        self.proxies.update(
+            {
+                "http": proxy,
+                "https": proxy,
+            }
+        )
+        return self
 
     def Execute(self, method=None, url=None):
         """

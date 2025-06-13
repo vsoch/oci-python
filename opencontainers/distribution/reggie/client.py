@@ -34,6 +34,7 @@ class ClientConfig(BaseConfig):
         "WithDebug",
         "WithDefaultName",
         "WithAuthScope",
+        "WithProxy",
     ]
 
     def __init__(self, address, opts=None):
@@ -48,6 +49,7 @@ class ClientConfig(BaseConfig):
         self.DefaultName = None
         self.UserAgent = DEFAULT_USER_AGENT
         self.required = [self.Address, self.UserAgent]
+        self.Proxy = None
         super().__init__()
 
     def _validate(self):
@@ -118,6 +120,17 @@ def WithUserAgent(userAgent):
     return WithUserAgent
 
 
+def WithProxy(proxy):
+    """
+    WithProxy sets the proxy configuration setting.
+    """
+
+    def WithProxy(config):
+        config.Proxy = proxy
+
+    return WithProxy
+
+
 # Client
 
 
@@ -178,6 +191,8 @@ class NewClient:
         requestClient.SetUrl(url)
         requestClient.SetHeader("User-Agent", self.Config.UserAgent)
         requestClient.SetRetryCallback(rc.RetryCallback)
+        if self.Config.Proxy:
+            requestClient.SetProxy(self.Config.Proxy)
 
         # Return the Client, which has Request and retryCallback
         return requestClient
