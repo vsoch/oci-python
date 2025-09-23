@@ -56,7 +56,7 @@ class Digest(StrStruct):
         Return the index of the : separator.
 
         return the index of the : separator or the index
-        that separtes the extra content provided in the algorithm name.
+        that separates the extra content provided in the algorithm name.
         """
         try:
             algorithm, encoded = (self).split(":")

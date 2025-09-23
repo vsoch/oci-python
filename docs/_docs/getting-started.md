@@ -361,7 +361,7 @@ req = (client.NewRequest("PATCH", response.GetRelativeLocation()).
 blobResponse = client.Do(req)
 ```
 
-Finally, valiate the uploaded blob content.
+Finally, validate the uploaded blob content.
 
 ```python
 req = client.NewRequest("GET", "/v2/<name>/blobs/<digest>",

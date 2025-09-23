@@ -175,7 +175,7 @@ class NewClient:
         # Set default namespace, and fill in string replacements
         namespace = rc.Name or self.Config.DefaultName
 
-        # Substitute known path paramaters
+        # Substitute known path parameters
         replacements = {
             "<name>": namespace,
             "<reference>": rc.Reference,
@@ -199,7 +199,7 @@ class NewClient:
 
     def Do(self, req):
         """
-        Execut a request.
+        Execute a request.
 
         Given a request (an instance of the RequestClient, execute the request
         and return a response.

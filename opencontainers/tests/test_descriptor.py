@@ -215,7 +215,7 @@ def test_descriptor(tmp_path):
     with pytest.raises(ErrDigestInvalidFormat):
         desc.load(no_hash)
 
-    # expected failure: digest does not match pattern (invalid aglorithm characters)
+    # expected failure: digest does not match pattern (invalid algorithm characters)
     with pytest.raises(ErrDigestInvalidFormat):
         desc.load(invalid_algchars)
 
@@ -226,7 +226,7 @@ def test_descriptor(tmp_path):
     # expected success: valid URL entry
     desc.load(valid_urls)
 
-    # expected failure: urls does not match format (invalide url characters)
+    # expected failure: urls does not match format (invalid url characters)
     with pytest.raises(SystemExit):
         desc.load(invalid_urls)
 
