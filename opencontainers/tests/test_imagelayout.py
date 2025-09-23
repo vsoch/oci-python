@@ -15,7 +15,7 @@ def test_imagelayout(tmp_path):
     """test creation of an opencontainers ImageLayout"""
     layout = ImageLayout()
 
-    # expected faulure:  imageLayoutVersion does not match pattern or type
+    # expected failure:  imageLayoutVersion does not match pattern or type
     with pytest.raises(SystemExit):
         layout.load({"imageLayoutVersion": 1.0})
 
