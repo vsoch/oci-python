@@ -125,6 +125,30 @@ index_with_custom = {
     ],
 }
 
+root_mediatype_valid = {
+    "schemaVersion": 2,
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "manifests": [
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 7143,
+            "digest": "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f",
+        }
+    ],
+}
+
+root_mediatype_invalid = {
+    "schemaVersion": 2,
+    "mediaType": "something/else",
+    "manifests": [
+        {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 7143,
+            "digest": "sha256:e692418e4cbaf90ca69d05a66403747baa33ee08806650b51fab815ad7fc331f",
+        }
+    ],
+}
+
 
 def test_imageindex(tmp_path):
     """test creation of an opencontainers Index"""
@@ -162,3 +186,10 @@ def test_imageindex(tmp_path):
 
     # valid image index, with customized media type of referenced manifest
     index.load(index_with_custom)
+
+    # expected failure: invalid root media type
+    with pytest.raises(SystemExit):
+        index.load(root_mediatype_invalid)
+
+    # valid root media type
+    index.load(root_mediatype_valid)

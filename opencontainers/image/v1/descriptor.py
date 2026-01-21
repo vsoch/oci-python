@@ -6,6 +6,7 @@
 
 from opencontainers.struct import Struct
 from opencontainers.digest import Digest
+from opencontainers.mediatype import RFC6838
 
 
 class Descriptor(Struct):
@@ -28,12 +29,11 @@ class Descriptor(Struct):
         super().__init__()
 
         # MediaType is the media type of the object this schema refers to.
-        regexp = "^[A-Za-z0-9][A-Za-z0-9!#$&-^_.+]{0,126}/[A-Za-z0-9][A-Za-z0-9!#$&-^_.+]{0,126}$"
         self.newAttr(
             name="MediaType",
             attType=str,
             jsonName="mediaType",
-            regexp=regexp,
+            regexp=RFC6838,
             required=True,
         )
 
